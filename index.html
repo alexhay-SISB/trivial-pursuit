@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educational Trivial Pursuit</title>
+    <title>Educational Trivial Pursuit - 4 Colors</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -18,8 +18,6 @@
             --color-green: #2ecc71;
             --color-blue: #3498db;
             --color-yellow: #f1c40f;
-            --color-purple: #9b59b6;
-            --color-orange: #e67e22;
             --bg-primary: #1a1a2e;
             --bg-secondary: #16213e;
             --text-light: #eee;
@@ -138,8 +136,6 @@
         .category-item.green { border-color: var(--color-green); }
         .category-item.blue { border-color: var(--color-blue); }
         .category-item.yellow { border-color: var(--color-yellow); }
-        .category-item.purple { border-color: var(--color-purple); }
-        .category-item.orange { border-color: var(--color-orange); }
 
         input, textarea, select {
             width: 100%;
@@ -215,54 +211,46 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .board-space:hover {
             transform: scale(1.1);
-            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .board-space.headquarters {
+            border: 3px solid white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
 
         .board-space.highlighted {
             animation: pulse 1s infinite;
-            border-color: white;
-            box-shadow: 0 0 30px currentColor;
+            border: 3px solid white;
+            transform: scale(1.15);
+        }
+
+        .board-center.highlighted {
+            animation: pulse 1s infinite;
+            transform: translate(-50%, -50%) scale(1.15);
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
-
-        .board-space.headquarters {
-            width: 65px;
-            height: 80px;
-            font-size: 1.1rem;
-            border-width: 4px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 1); }
         }
 
         .piece {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
             position: absolute;
-            border: 3px solid white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .piece:hover {
-            transform: scale(1.2);
-            z-index: 101;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+            z-index: 5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .dice-container {
@@ -271,82 +259,72 @@
         }
 
         .dice {
-            width: 100px;
-            height: 100px;
+            display: inline-block;
+            width: 80px;
+            height: 80px;
             background: white;
+            color: var(--bg-primary);
             border-radius: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             font-size: 3rem;
             font-weight: 700;
-            color: var(--bg-primary);
+            line-height: 80px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            font-family: 'Space Mono', monospace;
         }
 
         .dice:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
         }
 
         .dice.rolling {
-            animation: rollDice 0.5s ease-in-out;
+            animation: roll 0.5s ease;
         }
 
-        @keyframes rollDice {
+        @keyframes roll {
             0%, 100% { transform: rotate(0deg); }
             25% { transform: rotate(90deg); }
             50% { transform: rotate(180deg); }
             75% { transform: rotate(270deg); }
         }
 
-        .question-modal {
+        .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
         }
 
-        .question-modal.active {
+        .modal.active {
             display: flex;
         }
 
-        .question-card {
-            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
-            border-radius: 25px;
-            padding: 50px;
-            max-width: 700px;
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
             width: 90%;
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
-            animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 3px solid;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            border: 3px solid var(--accent);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         .question-category {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
         .question-text {
-            font-size: 1.5rem;
-            margin: 25px 0;
+            font-size: 1.3rem;
+            margin: 20px 0;
             line-height: 1.6;
         }
 
@@ -436,108 +414,58 @@
             border-radius: 5px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
-            background: #2a2a2a !important; /* Black by default */
+            background: #2a2a2a;
             position: relative;
         }
 
         .wheel-wedge.collected {
             border-color: white;
             box-shadow: 0 0 15px currentColor;
-            /* Color will be set inline when collected */
         }
 
-        .share-section {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
+        .wheel-wedge.collected-red {
+            background: var(--color-red) !important;
         }
 
-        .game-code {
-            font-family: 'Space Mono', monospace;
-            font-size: 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 15px 0;
-            letter-spacing: 3px;
-            color: var(--accent);
+        .wheel-wedge.collected-green {
+            background: var(--color-green) !important;
         }
 
-        .questions-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        .wheel-wedge.collected-blue {
+            background: var(--color-blue) !important;
         }
 
-        .questions-table th,
-        .questions-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .questions-table th {
-            background: rgba(255, 255, 255, 0.1);
-            font-weight: 700;
-        }
-
-        .questions-table button {
-            padding: 5px 15px;
-            font-size: 0.9rem;
-        }
-
-        .btn-small {
-            padding: 8px 20px;
-            font-size: 0.95rem;
+        .wheel-wedge.collected-yellow {
+            background: var(--color-yellow) !important;
         }
 
         .hidden {
             display: none;
         }
 
-        .color-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 10px;
-        }
-
         .winning-message {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
-            animation: fadeIn 0.5s ease;
+            flex-direction: column;
         }
 
         .winning-message.active {
             display: flex;
         }
 
-        .winning-content {
-            text-align: center;
-            animation: celebration 1s ease-in-out;
-        }
-
-        @keyframes celebration {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.2) rotate(-5deg); }
-            75% { transform: scale(1.2) rotate(5deg); }
-        }
-
-        .winning-content h2 {
+        .winner-name {
             font-size: 4rem;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #ffd700, #ff6b9d, var(--accent));
+            font-weight: 700;
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--accent), #ff6b9d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -547,22 +475,65 @@
             position: absolute;
             width: 10px;
             height: 10px;
-            background: var(--accent);
-            animation: confettiFall 3s linear infinite;
+            background: var(--color-red);
+            top: -10px;
+            animation: confetti-fall 3s linear infinite;
         }
 
-        @keyframes confettiFall {
+        @keyframes confetti-fall {
             to {
                 transform: translateY(100vh) rotate(360deg);
                 opacity: 0;
             }
         }
 
-        @media (max-width: 768px) {
-            h1 { font-size: 2rem; }
-            .game-board { width: 90vw; height: 90vw; }
-            .question-card { padding: 30px; }
-            .question-text { font-size: 1.2rem; }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .questions-preview {
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .questions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .questions-table th,
+        .questions-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .btn-small {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+        }
+
+        .menu-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+
+        .menu-button {
+            min-width: 200px;
         }
     </style>
 </head>
@@ -571,175 +542,135 @@
         <!-- Home Page -->
         <div id="homePage" class="page active">
             <h1>🎯 Educational Trivial Pursuit</h1>
-            <div class="setup-section" style="text-align: center;">
-                <h2 style="color: #b0b0b0; font-weight: 400; font-size: 1.3rem; margin-bottom: 40px;">Choose your mode to get started</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 800px; margin: 0 auto;">
-                    <div onclick="showPage('setupPage')" style="background: linear-gradient(135deg, var(--accent), #00b4d8); padding: 50px 30px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 15px 40px rgba(0, 217, 255, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 217, 255, 0.3)'">
-                        <div style="font-size: 3rem; margin-bottom: 15px;">📝</div>
-                        <h3 style="font-size: 1.8rem; margin-bottom: 10px; color: white;">Teacher Mode</h3>
-                        <p style="font-size: 1.1rem; opacity: 0.95; color: white;">Edit Questions & Answers</p>
-                    </div>
-                    <div onclick="showPage('loadPage')" style="background: linear-gradient(135deg, #6c757d, #495057); padding: 50px 30px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(108, 117, 125, 0.3);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 15px 40px rgba(108, 117, 125, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(108, 117, 125, 0.3)'">
-                        <div style="font-size: 3rem; margin-bottom: 15px;">🎮</div>
-                        <h3 style="font-size: 1.8rem; margin-bottom: 10px; color: white;">Student Mode</h3>
-                        <p style="font-size: 1.1rem; opacity: 0.95; color: white;">Enter Game Code</p>
-                    </div>
-                </div>
+            <h2 style="text-align: center; color: var(--accent); margin-bottom: 40px;">4-Color Edition</h2>
+            <div class="menu-buttons">
+                <button class="btn menu-button" onclick="showPage('setupPage')">🎮 Teacher: Create Game</button>
+                <button class="btn menu-button" onclick="showPage('loadGamePage')">📱 Student: Join Game</button>
             </div>
         </div>
 
-        <!-- Setup Page -->
+        <!-- Setup Page (Teacher) -->
         <div id="setupPage" class="page">
-            <h1>Game Setup</h1>
+            <h1>Teacher Setup</h1>
             
-            <!-- File Upload - Now at the top -->
             <div class="setup-section">
-                <h2>📁 Upload Questions (Required)</h2>
-                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                    <p style="font-size: 1.3rem; margin-bottom: 10px;">📤 Click to upload Excel/CSV file</p>
-                    <p style="opacity: 0.7;">or drag and drop here</p>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleFileUpload(event)">
-                </div>
-                <div style="text-align: center; margin-top: 15px;">
-                    <button class="btn btn-small" onclick="downloadTemplate()">⬇️ Download Template</button>
-                </div>
-                <div id="uploadStatus" style="margin-top: 15px; text-align: center; font-weight: 600;"></div>
-            </div>
-
-            <!-- Category Setup -->
-            <div class="setup-section">
-                <h2>📚 Category Setup</h2>
-                <p>Define what each color represents:</p>
+                <h2>1. Customize Categories</h2>
+                <p style="margin-bottom: 20px;">Name your 4 question categories:</p>
                 <div class="category-setup">
                     <div class="category-item red">
                         <label>🔴 Red Category</label>
-                        <input type="text" id="catRed" placeholder="e.g., Define" value="Define">
+                        <input type="text" id="catRed" value="Define" placeholder="e.g., Define">
                     </div>
                     <div class="category-item green">
                         <label>🟢 Green Category</label>
-                        <input type="text" id="catGreen" placeholder="e.g., Give 2 Examples" value="Give 2 Examples">
+                        <input type="text" id="catGreen" value="Give Examples" placeholder="e.g., Give Examples">
                     </div>
                     <div class="category-item blue">
                         <label>🔵 Blue Category</label>
-                        <input type="text" id="catBlue" placeholder="e.g., Explain" value="Explain">
+                        <input type="text" id="catBlue" value="Explain" placeholder="e.g., Explain">
                     </div>
                     <div class="category-item yellow">
                         <label>🟡 Yellow Category</label>
-                        <input type="text" id="catYellow" placeholder="e.g., True or False" value="True or False">
-                    </div>
-                    <div class="category-item purple">
-                        <label>🟣 Purple Category</label>
-                        <input type="text" id="catPurple" placeholder="e.g., Multiple Choice" value="Multiple Choice">
-                    </div>
-                    <div class="category-item orange">
-                        <label>🟠 Orange Category</label>
-                        <input type="text" id="catOrange" placeholder="e.g., Apply" value="Apply">
+                        <input type="text" id="catYellow" value="True or False" placeholder="e.g., True or False">
                     </div>
                 </div>
             </div>
 
-            <!-- Manual Question Entry -->
             <div class="setup-section">
-                <h2>✏️ Add/Edit Questions Manually (Optional)</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label>Category</label>
-                        <select id="manualCategory">
-                            <option value="red">🔴 Red</option>
-                            <option value="green">🟢 Green</option>
-                            <option value="blue">🔵 Blue</option>
-                            <option value="yellow">🟡 Yellow</option>
-                            <option value="purple">🟣 Purple</option>
-                            <option value="orange">🟠 Orange</option>
-                        </select>
-                    </div>
+                <h2>2. Add Questions</h2>
+                <button class="btn" onclick="downloadTemplate()">📥 Download Excel Template</button>
+                <p style="margin: 20px 0;">Fill in the template with your questions and upload it here:</p>
+                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload(event)">
+                    <p style="font-size: 1.2rem;">📂 Click to Upload Questions</p>
+                    <p style="opacity: 0.7; margin-top: 10px;">Accepts .xlsx and .xls files</p>
                 </div>
-                <div>
-                    <label>Question</label>
-                    <textarea id="manualQuestion" rows="3" placeholder="Enter your question here..."></textarea>
+                <div style="margin-top: 20px;">
+                    <p><strong>Questions Loaded: <span id="questionCount">0</span></strong></p>
                 </div>
-                <div>
-                    <label>Answer</label>
-                    <textarea id="manualAnswer" rows="3" placeholder="Enter the answer here..."></textarea>
+                <div class="questions-preview">
+                    <table class="questions-table">
+                        <thead>
+                            <tr>
+                                <th>Color</th>
+                                <th>Question</th>
+                                <th>Answer</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionsTableBody"></tbody>
+                    </table>
                 </div>
-                <button class="btn btn-small" onclick="addManualQuestion()">➕ Add Question</button>
-                
-                <div id="questionsPreview" style="margin-top: 25px;">
-                    <h3 style="margin-bottom: 15px;">Current Questions (<span id="questionCount">0</span>)</h3>
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        <table class="questions-table">
-                            <thead>
-                                <tr>
-                                    <th>Color</th>
-                                    <th>Question</th>
-                                    <th>Answer</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="questionsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
+
+                <h3 style="margin-top: 30px;">Or Add Questions Manually:</h3>
+                <select id="manualCategory">
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                    <option value="yellow">Yellow</option>
+                </select>
+                <textarea id="manualQuestion" placeholder="Question" rows="2"></textarea>
+                <textarea id="manualAnswer" placeholder="Answer" rows="2"></textarea>
+                <button class="btn" onclick="addManualQuestion()">Add Question</button>
             </div>
 
-            <!-- Share Section -->
-            <div class="setup-section share-section">
-                <h2>🔗 Share Your Game</h2>
-                <p>Once you've set up your game, generate a shareable code:</p>
-                <button class="btn" onclick="generateGameCode()">Generate Game Code</button>
-                <div id="gameCodeDisplay" class="hidden">
-                    <p style="margin-top: 20px;">Share this code with students:</p>
-                    <div class="game-code" id="gameCodeText"></div>
+            <div class="setup-section">
+                <h2>3. Generate Game Code</h2>
+                <p style="margin-bottom: 15px;">Create a code for students to join:</p>
+                <button class="btn" onclick="generateGameCode()">🔑 Generate Game Code</button>
+                <div id="gameCodeDisplay" class="hidden" style="margin-top: 20px; padding: 20px; background: rgba(0, 217, 255, 0.1); border-radius: 10px;">
+                    <p style="font-size: 1.2rem; font-weight: 600;">Share this code with students:</p>
+                    <p id="gameCodeText" style="font-family: 'Space Mono', monospace; font-size: 1.5rem; margin: 15px 0; word-break: break-all;"></p>
                     <button class="btn btn-small" onclick="copyGameCode()">📋 Copy Code</button>
-                    <p style="margin-top: 15px; opacity: 0.8;">Students will set up their own teams when they load the game.</p>
                 </div>
             </div>
 
-            <div style="text-align: center; margin: 30px 0;">
-                <button class="btn btn-secondary" onclick="showPage('homePage')">🏠 Back to Home</button>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="showPage('homePage')">← Back</button>
             </div>
         </div>
 
-        <!-- Load Page -->
-        <div id="loadPage" class="page">
-            <h1>Load Game</h1>
+        <!-- Load Game Page (Student) -->
+        <div id="loadGamePage" class="page">
+            <h1>Join Game</h1>
             <div class="setup-section">
                 <h2>Enter Game Code</h2>
-                <textarea id="loadGameCode" rows="8" placeholder="Paste game code here..." style="font-family: 'Space Mono', monospace;"></textarea>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn" onclick="loadGameFromCode()">Load Game</button>
-                    <button class="btn btn-secondary" onclick="showPage('homePage')">Cancel</button>
-                </div>
-                <div id="loadStatus" style="margin-top: 15px; text-align: center; font-weight: 600;"></div>
+                <p style="margin-bottom: 15px;">Enter the code from your teacher:</p>
+                <input type="text" id="loadGameCode" placeholder="Paste game code here" style="font-family: 'Space Mono', monospace;">
+                <button class="btn" onclick="loadGameFromCode()" style="margin-top: 15px;">Load Game</button>
+                <p id="loadStatus" style="margin-top: 15px; font-weight: 600;"></p>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="showPage('homePage')">← Back</button>
             </div>
         </div>
 
-        <!-- Student Team Setup Page -->
+        <!-- Team Setup Page -->
         <div id="teamSetupPage" class="page">
-            <h1>👥 Team Setup</h1>
-            
+            <h1>Team Setup</h1>
             <div class="setup-section">
-                <h2>Create Your Teams (2-6 teams)</h2>
-                <p style="margin-bottom: 20px;">Each team should enter their team name below.</p>
-                <div class="team-setup" id="teamSetup"></div>
-                <button class="btn btn-small" onclick="addTeam()" id="addTeamBtn">➕ Add Team</button>
+                <h2>Teams</h2>
+                <p style="margin-bottom: 15px;">How many teams are playing? (2-6 teams)</p>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                    <button class="btn btn-small" onclick="updateTeamCount(-1)">-</button>
+                    <span id="teamCountDisplay" style="font-size: 1.5rem; font-weight: 700; min-width: 50px; text-align: center;">2</span>
+                    <button class="btn btn-small" onclick="updateTeamCount(1)">+</button>
+                </div>
+                <div id="teamSetup" class="team-setup"></div>
             </div>
-
-            <div style="text-align: center; margin: 30px 0;">
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="showPage('setupPage')">← Back</button>
                 <button class="btn" onclick="startGame()">🎮 Start Game</button>
-                <button class="btn btn-secondary" onclick="showPage('homePage')">Cancel</button>
             </div>
         </div>
 
         <!-- Game Page -->
         <div id="gamePage" class="page">
-            <h1>🎯 Game On!</h1>
-            
             <div class="game-info">
                 <div class="current-team">
                     Current Turn: <span id="currentTeamName" style="color: var(--accent);">Team 1</span>
                 </div>
-                <button class="btn btn-secondary btn-small" onclick="endGame()">End Game</button>
+                <button class="btn btn-small btn-secondary" onclick="endGame()">End Game</button>
             </div>
 
             <div class="team-progress" id="teamProgress"></div>
@@ -754,14 +685,15 @@
     </div>
 
     <!-- Question Modal -->
-    <div class="question-modal" id="questionModal">
-        <div class="question-card" id="questionCard">
-            <div class="question-category" id="questionCategory"></div>
-            <div class="question-text" id="questionText"></div>
+    <div id="questionModal" class="modal">
+        <div class="modal-content" id="questionCard">
+            <h2 class="question-category" id="questionCategory">Category</h2>
             <div class="timer" id="timer">30</div>
-            <button class="btn" onclick="showAnswer()" id="showAnswerBtn">Show Answer</button>
+            <p class="question-text" id="questionText">Question goes here</p>
+            <button class="btn" id="showAnswerBtn" onclick="showAnswer()">Show Answer</button>
             <div class="answer-section hidden" id="answerSection">
-                <div class="answer-text" id="answerText"></div>
+                <p style="font-weight: 600; font-size: 1.2rem;">Answer:</p>
+                <p class="answer-text" id="answerText">Answer goes here</p>
                 <div class="answer-buttons">
                     <button class="btn btn-correct" onclick="answerCorrect()">✓ Correct</button>
                     <button class="btn btn-incorrect" onclick="answerIncorrect()">✗ Incorrect</button>
@@ -771,12 +703,11 @@
     </div>
 
     <!-- Winning Message -->
-    <div class="winning-message" id="winningMessage">
-        <div class="winning-content">
-            <h2>🏆 <span id="winnerName"></span> Wins! 🏆</h2>
-            <p style="font-size: 1.5rem; margin: 20px 0;">Congratulations!</p>
-            <button class="btn" onclick="showPage('homePage'); location.reload();">Play Again</button>
-        </div>
+    <div id="winningMessage" class="winning-message">
+        <h1 style="font-size: 5rem;">🎉 Winner! 🎉</h1>
+        <p class="winner-name" id="winnerName">Team Name</p>
+        <p style="font-size: 1.5rem; margin: 20px 0;">Congratulations!</p>
+        <button class="btn" onclick="showPage('homePage'); location.reload();">Play Again</button>
     </div>
 
     <script>
@@ -784,11 +715,9 @@
         let gameState = {
             categories: {
                 red: 'Define',
-                green: 'Give 2 Examples',
+                green: 'Give Examples',
                 blue: 'Explain',
-                yellow: 'True or False',
-                purple: 'Multiple Choice',
-                orange: 'Apply'
+                yellow: 'True or False'
             },
             questions: {},
             teams: [],
@@ -797,94 +726,86 @@
             currentRoll: 0,
             possibleMoves: [],
             timerInterval: null,
-            colorOrder: [] // Will store randomized color order for the board
+            colorOrder: [],
+            canWin: false
         };
 
-        // Initialize - don't create teams automatically
+        // Initialize
         updateQuestionsPreview();
 
         function initializeTeams() {
-            // Start with 2 empty teams
             const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
             if (gameState.teams.length === 0) {
                 for (let i = 0; i < 2; i++) {
                     gameState.teams.push({
                         name: `Team ${i + 1}`,
                         color: colors[i],
-                        position: i * 7, // Start at different HQ positions (0, 7, 14, 21)
+                        position: i * 7,
                         wedges: {
                             red: false,
                             green: false,
                             blue: false,
-                            yellow: false,
-                            purple: false,
-                            orange: false
+                            yellow: false
                         }
                     });
                 }
-                console.log('Teams initialized:', gameState.teams.map(t => `${t.name} at position ${t.position}`));
             }
             updateTeamSetup();
         }
 
+        function updateTeamCount(change) {
+            const currentCount = gameState.teams.length || 2;
+            const newCount = Math.max(2, Math.min(6, currentCount + change));
+            
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            
+            if (newCount > gameState.teams.length) {
+                for (let i = gameState.teams.length; i < newCount; i++) {
+                    gameState.teams.push({
+                        name: `Team ${i + 1}`,
+                        color: colors[i],
+                        position: (i % 4) * 7,
+                        wedges: { red: false, green: false, blue: false, yellow: false }
+                    });
+                }
+            } else if (newCount < gameState.teams.length) {
+                gameState.teams = gameState.teams.slice(0, newCount);
+            }
+            
+            updateTeamSetup();
+        }
+
         function updateTeamSetup() {
+            document.getElementById('teamCountDisplay').textContent = gameState.teams.length;
             const container = document.getElementById('teamSetup');
             container.innerHTML = '';
+            
             gameState.teams.forEach((team, index) => {
                 const div = document.createElement('div');
                 div.className = 'team-item';
                 div.innerHTML = `
                     <div class="team-color" style="background: ${team.color};"></div>
-                    <input type="text" value="${team.name}" onchange="updateTeamName(${index}, this.value)" placeholder="Team Name">
-                    ${gameState.teams.length > 2 ? `<button class="btn btn-small" onclick="removeTeam(${index})" style="margin-left: auto;">✕</button>` : ''}
+                    <input type="text" value="${team.name}" onchange="gameState.teams[${index}].name = this.value" placeholder="Team ${index + 1}">
                 `;
                 container.appendChild(div);
             });
-            document.getElementById('addTeamBtn').style.display = gameState.teams.length >= 6 ? 'none' : 'block';
-        }
-
-        function addTeam() {
-            if (gameState.teams.length >= 6) return;
-            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
-            const startPositions = [0, 7, 14, 21]; // 4 starting HQ positions
-            gameState.teams.push({
-                name: `Team ${gameState.teams.length + 1}`,
-                color: colors[gameState.teams.length],
-                position: startPositions[gameState.teams.length % 4],
-                wedges: {
-                    red: false,
-                    green: false,
-                    blue: false,
-                    yellow: false,
-                    purple: false,
-                    orange: false
-                }
-            });
-            updateTeamSetup();
-        }
-
-        function removeTeam(index) {
-            if (gameState.teams.length <= 2) return;
-            gameState.teams.splice(index, 1);
-            updateTeamSetup();
-        }
-
-        function updateTeamName(index, name) {
-            gameState.teams[index].name = name;
         }
 
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'teamSetupPage' && gameState.teams.length === 0) {
+                initializeTeams();
+            }
         }
 
-        // File handling
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
@@ -892,74 +813,31 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
                     parseQuestions(jsonData);
-                    document.getElementById('uploadStatus').innerHTML = '✅ File uploaded successfully!';
-                    document.getElementById('uploadStatus').style.color = '#2ecc71';
+                    alert('Questions loaded successfully!');
                 } catch (error) {
-                    document.getElementById('uploadStatus').innerHTML = '❌ Error reading file. Please check the format.';
-                    document.getElementById('uploadStatus').style.color = '#e74c3c';
+                    alert('Error reading file. Please make sure it\'s a valid Excel file.');
+                    console.error(error);
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
         function parseQuestions(data) {
-            gameState.questions = { red: [], green: [], blue: [], yellow: [], purple: [], orange: [] };
+            gameState.questions = { red: [], green: [], blue: [], yellow: [] };
             
-            // New format: columns are "Red Question", "Red Answer", etc.
             data.forEach(row => {
-                // Red questions
-                if (row['Red Question'] && row['Red Answer']) {
-                    const question = String(row['Red Question']).trim();
-                    const answer = String(row['Red Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.red.push({ question, answer });
+                ['red', 'green', 'blue', 'yellow'].forEach(color => {
+                    const qCol = `${color.charAt(0).toUpperCase() + color.slice(1)} Question`;
+                    const aCol = `${color.charAt(0).toUpperCase() + color.slice(1)} Answer`;
+                    
+                    if (row[qCol] && row[aCol]) {
+                        const question = String(row[qCol]).trim();
+                        const answer = String(row[aCol]).trim();
+                        if (question && answer) {
+                            gameState.questions[color].push({ question, answer });
+                        }
                     }
-                }
-                
-                // Green questions
-                if (row['Green Question'] && row['Green Answer']) {
-                    const question = String(row['Green Question']).trim();
-                    const answer = String(row['Green Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.green.push({ question, answer });
-                    }
-                }
-                
-                // Blue questions
-                if (row['Blue Question'] && row['Blue Answer']) {
-                    const question = String(row['Blue Question']).trim();
-                    const answer = String(row['Blue Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.blue.push({ question, answer });
-                    }
-                }
-                
-                // Yellow questions
-                if (row['Yellow Question'] && row['Yellow Answer']) {
-                    const question = String(row['Yellow Question']).trim();
-                    const answer = String(row['Yellow Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.yellow.push({ question, answer });
-                    }
-                }
-                
-                // Purple questions
-                if (row['Purple Question'] && row['Purple Answer']) {
-                    const question = String(row['Purple Question']).trim();
-                    const answer = String(row['Purple Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.purple.push({ question, answer });
-                    }
-                }
-                
-                // Orange questions
-                if (row['Orange Question'] && row['Orange Answer']) {
-                    const question = String(row['Orange Question']).trim();
-                    const answer = String(row['Orange Answer']).trim();
-                    if (question && answer) {
-                        gameState.questions.orange.push({ question, answer });
-                    }
-                }
+                });
             });
             
             updateQuestionsPreview();
@@ -992,7 +870,7 @@
             tbody.innerHTML = '';
             
             let totalCount = 0;
-            const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
+            const colors = ['red', 'green', 'blue', 'yellow'];
             
             colors.forEach(color => {
                 if (gameState.questions[color]) {
@@ -1018,26 +896,23 @@
         }
 
         function downloadTemplate() {
-            // Create template with column-based layout: Red Q, Red A, Green Q, Green A, etc. (6 colors)
             const headers = [
-                'Red Question', 'Red Answer', 
-                'Green Question', 'Green Answer', 
-                'Blue Question', 'Blue Answer', 
-                'Yellow Question', 'Yellow Answer',
-                'Purple Question', 'Purple Answer',
-                'Orange Question', 'Orange Answer'
+                'Red Question', 'Red Answer',
+                'Green Question', 'Green Answer',
+                'Blue Question', 'Blue Answer',
+                'Yellow Question', 'Yellow Answer'
             ];
             
             const instructionRow = [
-                'INSTRUCTIONS: Each color has a Question and Answer column. Add at least 20 question/answer pairs per color by filling rows below. Simply copy/paste from your question bank!',
-                '', '', '', '', '', '', '', '', '', '', ''
+                'INSTRUCTIONS: Each color has a Question and Answer column. Add at least 20 question/answer pairs per color by filling rows below.',
+                '', '', '', '', '', '', ''
             ];
             
             const examples = {
                 red: [
-                    ["Define photosynthesis", "The process by which plants convert light energy into chemical energy using carbon dioxide and water"],
-                    ["Define democracy", "A system of government where citizens exercise power by voting and electing representatives"],
-                    ["Define velocity", "The rate of change of an object's position with respect to time, including direction"]
+                    ["Define photosynthesis", "The process by which plants convert light energy into chemical energy"],
+                    ["Define democracy", "A system of government where citizens exercise power by voting"],
+                    ["Define velocity", "The rate of change of position with respect to time"]
                 ],
                 green: [
                     ["Give 2 examples of renewable energy", "1) Solar power 2) Wind power"],
@@ -1053,99 +928,42 @@
                     ["True or False: Water boils at 100°C", "True"],
                     ["True or False: The Great Wall is visible from space", "False"],
                     ["True or False: Bats are blind", "False"]
-                ],
-                purple: [
-                    ["What is the capital of France? A)London B)Paris", "B) Paris"],
-                    ["Which planet is red? A)Venus B)Mars", "B) Mars"],
-                    ["How many sides in hexagon? A)5 B)6", "B) 6"]
-                ],
-                orange: [
-                    ["Apply Newton's First Law to braking", "Objects in motion stay in motion unless force applied"],
-                    ["Apply supply/demand to shortages", "Decreased supply with constant demand raises prices"],
-                    ["Apply Pythagorean theorem to 3m x 4m", "a²+b²=c², so 3²+4²=25, c=5m"]
                 ]
             };
             
-            // Build data array
             const data = [headers, instructionRow];
             
-            // Add 20 rows (3 examples + 17 blank)
             for (let i = 0; i < 20; i++) {
                 const row = [];
-                
-                // Red Q & A
-                if (i < 3) {
-                    row.push(examples.red[i][0], examples.red[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
-                // Green Q & A
-                if (i < 3) {
-                    row.push(examples.green[i][0], examples.green[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
-                // Blue Q & A
-                if (i < 3) {
-                    row.push(examples.blue[i][0], examples.blue[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
-                // Yellow Q & A
-                if (i < 3) {
-                    row.push(examples.yellow[i][0], examples.yellow[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
-                // Purple Q & A
-                if (i < 3) {
-                    row.push(examples.purple[i][0], examples.purple[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
-                // Orange Q & A
-                if (i < 3) {
-                    row.push(examples.orange[i][0], examples.orange[i][1]);
-                } else {
-                    row.push('', '');
-                }
-                
+                ['red', 'green', 'blue', 'yellow'].forEach(color => {
+                    if (i < 3) {
+                        row.push(examples[color][i][0], examples[color][i][1]);
+                    } else {
+                        row.push('', '');
+                    }
+                });
                 data.push(row);
             }
             
             const ws = XLSX.utils.aoa_to_sheet(data);
-            
-            // Set column widths for 6 colors (12 columns)
             ws['!cols'] = [
-                { wch: 45 }, { wch: 45 }, // Red
-                { wch: 45 }, { wch: 45 }, // Green
-                { wch: 45 }, { wch: 45 }, // Blue
-                { wch: 45 }, { wch: 45 }, // Yellow
-                { wch: 45 }, { wch: 45 }, // Purple
-                { wch: 45 }, { wch: 45 }  // Orange
+                { wch: 45 }, { wch: 45 },
+                { wch: 45 }, { wch: 45 },
+                { wch: 45 }, { wch: 45 },
+                { wch: 45 }, { wch: 45 }
             ];
-            
-            // Merge instruction cell across all 12 columns
-            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }];
+            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }];
             
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Questions');
-            XLSX.writeFile(wb, 'trivial_pursuit_template.xlsx');
+            XLSX.writeFile(wb, 'trivial_pursuit_template_4colors.xlsx');
         }
 
         function generateGameCode() {
-            // Update categories from inputs
             gameState.categories.red = document.getElementById('catRed').value;
             gameState.categories.green = document.getElementById('catGreen').value;
             gameState.categories.blue = document.getElementById('catBlue').value;
             gameState.categories.yellow = document.getElementById('catYellow').value;
-            gameState.categories.purple = document.getElementById('catPurple').value;
-            gameState.categories.orange = document.getElementById('catOrange').value;
             
             const gameData = {
                 categories: gameState.categories,
@@ -1177,20 +995,9 @@
                 gameState.categories = decoded.categories;
                 gameState.questions = decoded.questions;
                 
-                // Update UI (for teacher view if they want to edit)
-                document.getElementById('catRed').value = decoded.categories.red;
-                document.getElementById('catGreen').value = decoded.categories.green;
-                document.getElementById('catBlue').value = decoded.categories.blue;
-                document.getElementById('catYellow').value = decoded.categories.yellow;
-                document.getElementById('catPurple').value = decoded.categories.purple || 'Multiple Choice';
-                document.getElementById('catOrange').value = decoded.categories.orange || 'Apply';
-                
-                updateQuestionsPreview();
-                
                 document.getElementById('loadStatus').innerHTML = '✅ Game loaded successfully!';
                 document.getElementById('loadStatus').style.color = '#2ecc71';
                 
-                // Show team setup page for students
                 initializeTeams();
                 setTimeout(() => showPage('teamSetupPage'), 1500);
             } catch (error) {
@@ -1200,23 +1007,19 @@
         }
 
         function startGame() {
-            // Validate
             let totalQuestions = 0;
             Object.values(gameState.questions).forEach(arr => totalQuestions += arr.length);
             
-            if (totalQuestions < 6) {
-                alert('Please add at least 1 question per category (6 total minimum)');
+            if (totalQuestions < 4) {
+                alert('Please add at least 1 question per category (4 total minimum)');
                 return;
             }
             
-            // Update categories from inputs if on setup page
             if (document.getElementById('catRed')) {
                 gameState.categories.red = document.getElementById('catRed').value;
                 gameState.categories.green = document.getElementById('catGreen').value;
                 gameState.categories.blue = document.getElementById('catBlue').value;
                 gameState.categories.yellow = document.getElementById('catYellow').value;
-                gameState.categories.purple = document.getElementById('catPurple').value;
-                gameState.categories.orange = document.getElementById('catOrange').value;
             }
             
             createBoard();
@@ -1226,25 +1029,31 @@
 
         function createBoard() {
             const board = document.getElementById('gameBoard');
-            board.innerHTML = '<div class="board-center">FINISH</div>';
+            board.innerHTML = '';
             
-            // Randomize color order for the board - 6 colors
-            const allColors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
+            const center = document.createElement('div');
+            center.className = 'board-center';
+            center.textContent = 'FINISH';
+            center.style.cursor = 'pointer';
+            center.addEventListener('click', () => {
+                if (gameState.canWin && center.classList.contains('highlighted')) {
+                    const currentTeam = gameState.teams[gameState.currentTeamIndex];
+                    showWinner(currentTeam);
+                }
+            });
+            board.appendChild(center);
+            
+            const allColors = ['red', 'green', 'blue', 'yellow'];
             gameState.colorOrder = allColors.sort(() => Math.random() - 0.5);
             
             const positions = [];
             const centerX = 350;
             const centerY = 350;
             const outerRadius = 280;
-            const centerRadius = 80;
             
-            // Create circular path around the outside (28 spaces total: 4 HQ + 24 regular)
-            // 4 headquarters evenly spaced, with 6 spaces between each
             const totalOuterSpaces = 28;
-            const spacesPerSection = 7; // 1 HQ + 6 regular spaces
-            const hqPositions = [0, 7, 14, 21]; // Positions of the 4 HQ spaces
+            const hqPositions = [0, 7, 14, 21];
             
-            // Randomly select 5 positions for "roll again" (not on HQ spaces, at least 3 apart)
             const nonHQPositions = [];
             for (let i = 0; i < totalOuterSpaces; i++) {
                 if (!hqPositions.includes(i)) {
@@ -1252,15 +1061,13 @@
                 }
             }
             
-            // Select 5 positions that are at least 3 spaces apart
             const rollAgainPositions = [];
             const shuffled = nonHQPositions.sort(() => Math.random() - 0.5);
             for (let pos of shuffled) {
-                // Check if this position is at least 3 spaces from all existing roll-again positions
                 const tooClose = rollAgainPositions.some(existing => {
                     const distance = Math.min(
                         Math.abs(pos - existing),
-                        totalOuterSpaces - Math.abs(pos - existing) // Account for circular wrapping
+                        totalOuterSpaces - Math.abs(pos - existing)
                     );
                     return distance < 3;
                 });
@@ -1278,58 +1085,51 @@
                 
                 const isHQ = hqPositions.includes(i);
                 
-                // Determine color
                 let spaceColor;
                 if (rollAgainPositions.includes(i)) {
                     spaceColor = 'roll-again';
                 } else {
-                    // Rotate through all 6 colors in randomized order
-                    spaceColor = gameState.colorOrder[i % 6];
+                    spaceColor = gameState.colorOrder[i % 4];
                 }
                 
-                // HQ spaces use first 4 colors from randomized order
                 if (isHQ) {
                     const hqIndex = hqPositions.indexOf(i);
                     spaceColor = gameState.colorOrder[hqIndex];
                 }
                 
                 const space = createSpace(spaceColor, x, y, isHQ, angle);
-                positions.push({ 
-                    color: spaceColor, 
-                    x, 
-                    y, 
-                    isHQ: isHQ, 
-                    isOuter: true, 
-                    spokeEntry: isHQ ? hqPositions.indexOf(i) : null 
+                positions.push({
+                    color: spaceColor,
+                    x,
+                    y,
+                    isHQ: isHQ,
+                    isOuter: true,
+                    spokeEntry: isHQ ? hqPositions.indexOf(i) : null
                 });
                 board.appendChild(space);
             }
             
-            // Create 4 spoke paths from headquarters to center (5 spaces each)
-            const numSpokeSpaces = 5;
+            const numSpokeSpaces = 4;
             for (let spoke = 0; spoke < 4; spoke++) {
                 const spokeAngle = (spoke * 90 - 90) * Math.PI / 180;
                 
                 for (let step = 1; step <= numSpokeSpaces; step++) {
-                    // Calculate radius with proper spacing accounting for card dimensions
-                    // Card height is 60px, so we need to move 60px inward each step
                     const cardHeight = 60;
                     const radius = outerRadius - (step * cardHeight);
                     
                     const x = centerX + radius * Math.cos(spokeAngle);
                     const y = centerY + radius * Math.sin(spokeAngle);
                     
-                    // Random color for each spoke space
-                    const spokeColor = gameState.colorOrder[Math.floor(Math.random() * 6)];
+                    const spokeColor = gameState.colorOrder[Math.floor(Math.random() * 4)];
                     
                     const space = createSpace(spokeColor, x, y, false, spokeAngle);
-                    positions.push({ 
-                        color: spokeColor, 
-                        x, 
-                        y, 
-                        isHQ: false, 
-                        isOuter: false, 
-                        spoke: spoke 
+                    positions.push({
+                        color: spokeColor,
+                        x,
+                        y,
+                        isHQ: false,
+                        isOuter: false,
+                        spoke: spoke
                     });
                     board.appendChild(space);
                 }
@@ -1337,44 +1137,31 @@
             
             gameState.boardSpaces = positions;
             
-            console.log('Board created with', positions.length, 'total spaces');
-            console.log('Outer spaces (first 28):', positions.slice(0, 28).map((p, i) => `${i}: ${p.color} ${p.isHQ ? '⭐HQ' : ''}`));
-            console.log('HQ positions should be at indices:', [0, 7, 14, 21]);
-            
-            // Create visible pieces for all teams at their different HQ starting positions
             gameState.teams.forEach((team, index) => {
                 const piece = document.createElement('div');
                 piece.className = 'piece';
                 piece.style.background = team.color;
                 
-                // Place each team at their designated starting HQ position
-                const startSpace = gameState.boardSpaces[team.position];
-                piece.style.left = `${startSpace.x - 17.5}px`;
-                piece.style.top = `${startSpace.y - 17.5}px`;
+                const startPos = positions[team.position];
+                piece.style.left = (startPos.x - 12.5) + 'px';
+                piece.style.top = (startPos.y - 12.5) + 'px';
                 
-                piece.style.border = '3px solid white';
-                piece.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.3)';
-                piece.innerHTML = `<div style="font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${index + 1}</div>`;
-                piece.id = `piece-${index}`;
                 board.appendChild(piece);
             });
+            
+            document.getElementById('currentTeamName').textContent = gameState.teams[0].name;
+            document.getElementById('currentTeamName').style.color = gameState.teams[0].color;
         }
 
         function createSpace(color, x, y, isHQ, angle) {
             const space = document.createElement('div');
-            space.className = `board-space ${isHQ ? 'headquarters' : ''}`;
+            space.className = 'board-space' + (isHQ ? ' headquarters' : '');
+            space.style.left = (x - 22.5) + 'px';
+            space.style.top = (y - 30) + 'px';
             
-            // Position based on whether it's HQ or regular
-            const width = isHQ ? 65 : 45;
-            const height = isHQ ? 80 : 60;
-            space.style.left = `${x - width/2}px`;
-            space.style.top = `${y - height/2}px`;
-            
-            // Rotate the space to align with the circle
             const rotation = (angle * 180 / Math.PI) + 90;
             space.style.transform = `rotate(${rotation}deg)`;
             
-            // Store metadata for debugging
             space.dataset.color = color;
             space.dataset.isHq = isHQ.toString();
             
@@ -1388,7 +1175,6 @@
                 }
             }
             
-            space.dataset.color = color;
             space.onclick = () => moveToSpace(space);
             
             return space;
@@ -1411,63 +1197,70 @@
         }
 
         function highlightPossibleMoves(spaces) {
-            console.log('highlightPossibleMoves called - spaces to move:', spaces);
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
-            console.log('Current team:', currentTeam.name, 'at position:', currentTeam.position);
             
-            // Remove all highlights
+            gameState.canWin = false;
             document.querySelectorAll('.board-space').forEach(space => {
                 space.classList.remove('highlighted');
             });
+            document.querySelector('.board-center').classList.remove('highlighted');
             
-            // Calculate possible position(s)
             const currentPos = currentTeam.position;
             const currentSpace = gameState.boardSpaces[currentPos];
-            
-            console.log('Current space data:', JSON.stringify(currentSpace));
             
             let targetPositions = [];
             
             if (currentSpace.isOuter) {
-                // On outer ring - move clockwise
                 const outerSpaces = gameState.boardSpaces.filter(s => s.isOuter);
                 const currentOuterIndex = outerSpaces.findIndex(s => s === currentSpace);
                 const newOuterIndex = (currentOuterIndex + spaces) % outerSpaces.length;
                 const targetSpace = outerSpaces[newOuterIndex];
                 const actualIndex = gameState.boardSpaces.indexOf(targetSpace);
                 
-                console.log('Moving on outer ring from', currentOuterIndex, 'to', newOuterIndex, 'actual index:', actualIndex);
                 targetPositions.push(actualIndex);
                 
-                // If landing on HQ and team has that wedge, can choose to go down spoke
                 const landingSpace = gameState.boardSpaces[actualIndex];
-                if (landingSpace.isHQ && landingSpace.spokeEntry !== null && currentTeam.wedges[landingSpace.color]) {
-                    // Also highlight first space of spoke
-                    const spokeSpaces = gameState.boardSpaces.filter(s => !s.isOuter && s.spoke === landingSpace.spokeEntry);
-                    if (spokeSpaces.length > 0) {
-                        targetPositions.push(gameState.boardSpaces.indexOf(spokeSpaces[0]));
+                
+                if (landingSpace.isHQ && landingSpace.spokeEntry !== null) {
+                    const freshTeam = gameState.teams[gameState.currentTeamIndex];
+                    const wedgeValues = Object.values(freshTeam.wedges);
+                    const hasAllWedges = wedgeValues.every(w => w === true);
+                    
+                    if (hasAllWedges) {
+                        const spokeSpaces = gameState.boardSpaces.filter(s => !s.isOuter && s.spoke === landingSpace.spokeEntry);
+                        spokeSpaces.sort((a, b) => {
+                            const distA = Math.sqrt(Math.pow(a.x - 350, 2) + Math.pow(a.y - 350, 2));
+                            const distB = Math.sqrt(Math.pow(b.x - 350, 2) + Math.pow(b.y - 350, 2));
+                            return distB - distA;
+                        });
+                        if (spokeSpaces.length > 0) {
+                            const spokeEntryIndex = gameState.boardSpaces.indexOf(spokeSpaces[0]);
+                            targetPositions.push(spokeEntryIndex);
+                        }
                     }
                 }
             } else {
-                // On a spoke - continue down spoke toward center
                 const spokeNum = currentSpace.spoke;
                 const spokeSpaces = gameState.boardSpaces.filter(s => !s.isOuter && s.spoke === spokeNum);
-                const currentSpokeIndex = spokeSpaces.indexOf(currentSpace);
                 
-                if (currentSpokeIndex + spaces < spokeSpaces.length) {
-                    // Move down the spoke
-                    const nextSpace = spokeSpaces[currentSpokeIndex + spaces];
+                spokeSpaces.sort((a, b) => {
+                    const distA = Math.sqrt(Math.pow(a.x - 350, 2) + Math.pow(a.y - 350, 2));
+                    const distB = Math.sqrt(Math.pow(b.x - 350, 2) + Math.pow(b.y - 350, 2));
+                    return distB - distA;
+                });
+                
+                const currentSpokeIndex = spokeSpaces.indexOf(currentSpace);
+                const targetSpokeIndex = currentSpokeIndex + spaces;
+                
+                if (targetSpokeIndex < spokeSpaces.length) {
+                    const nextSpace = spokeSpaces[targetSpokeIndex];
                     targetPositions.push(gameState.boardSpaces.indexOf(nextSpace));
                 } else {
-                    // Would reach center - win condition!
-                    // Highlight center
                     document.querySelector('.board-center').classList.add('highlighted');
+                    gameState.canWin = true;
                 }
             }
             
-            console.log('Target positions:', targetPositions);
-            
-            // Highlight all possible target positions
             targetPositions.forEach(pos => {
                 const allSpaces = document.querySelectorAll('.board-space');
                 allSpaces[pos].classList.add('highlighted');
@@ -1477,90 +1270,48 @@
         }
 
         function moveToSpace(spaceElement) {
-            if (gameState.currentRoll === 0) {
-                console.log('Cannot move - no dice roll');
-                return;
-            }
-            if (!spaceElement.classList.contains('highlighted')) {
-                console.log('Cannot move - space not highlighted');
-                return;
-            }
+            if (gameState.currentRoll === 0) return;
+            if (!spaceElement.classList.contains('highlighted')) return;
             
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
             
-            // Find which position this space is in boardSpaces array
             const allSpaces = document.querySelectorAll('.board-space');
             const spaceIndex = Array.from(allSpaces).indexOf(spaceElement);
             
-            if (spaceIndex < 0) {
-                console.error('Space not found in DOM');
-                return;
-            }
+            if (spaceIndex < 0) return;
             
-            // Get the actual board space data
             const spaceData = gameState.boardSpaces[spaceIndex];
+            if (!spaceData) return;
             
-            if (!spaceData) {
-                console.error('No space data at index', spaceIndex);
-                return;
-            }
+            const color = spaceData.color;
+            const isHQ = spaceData.isHQ;
             
-            // Also check the element's own data attributes as backup
-            const elementIsHQ = spaceElement.dataset.isHq === 'true';
-            const elementHasHQClass = spaceElement.classList.contains('headquarters');
-            
-            console.log('=== MOVE TO SPACE ===');
-            console.log('spaceIndex:', spaceIndex);
-            console.log('spaceData:', JSON.stringify(spaceData));
-            console.log('element data-isHq:', elementIsHQ);
-            console.log('element has HQ class:', elementHasHQClass);
-            
-            // Update team position to this index in the boardSpaces array
             currentTeam.position = spaceIndex;
             
-            // Animate piece movement
-            const piece = document.getElementById(`piece-${gameState.currentTeamIndex}`);
-            piece.style.left = `${spaceData.x - 17.5}px`;
-            piece.style.top = `${spaceData.y - 17.5}px`;
+            const pieces = document.querySelectorAll('.piece');
+            const piece = pieces[gameState.currentTeamIndex];
+            piece.style.left = (spaceData.x - 12.5) + 'px';
+            piece.style.top = (spaceData.y - 12.5) + 'px';
             
-            // Reset roll and highlights
             gameState.currentRoll = 0;
-            gameState.possibleMoves = [];
+            document.getElementById('dice').textContent = '🎲';
             document.querySelectorAll('.board-space').forEach(s => s.classList.remove('highlighted'));
-            
-            // Show question or roll again
-            const color = spaceData.color;
-            // Use element's data attribute as source of truth since it's set when space is created
-            const isHQ = elementIsHQ;
-            
-            console.log('Will show question for - color:', color, 'isHQ:', isHQ);
             
             if (color === 'roll-again') {
                 setTimeout(() => {
                     alert('Roll Again!');
                 }, 600);
             } else {
-                // Always show question - removed the setTimeout wrapper that might cause issues
-                if (!color) {
-                    console.error('No color found for space!');
-                    return;
-                }
+                if (!color) return;
                 setTimeout(() => {
-                    console.log('Calling showQuestion now...');
                     showQuestion(color, isHQ);
                 }, 600);
             }
         }
 
         function showQuestion(color, isHeadquarters) {
-            console.log('showQuestion called - Color:', color, 'IsHeadquarters:', isHeadquarters);
-            console.log('gameState.questions:', gameState.questions);
-            console.log(`Questions for ${color}:`, gameState.questions[color]);
-            
             if (!gameState.questions[color] || gameState.questions[color].length === 0) {
-                alert(`No questions available for the ${color} category!\n\nPlease make sure you've uploaded an Excel file with questions or added them manually before starting the game.`);
-                console.error('No questions found for color:', color);
-                console.error('All questions:', JSON.stringify(gameState.questions));
+                alert(`No questions available for the ${color} category!`);
                 nextTeam();
                 return;
             }
@@ -1580,11 +1331,8 @@
             
             modal.classList.add('active');
             
-            // Store current question context
             modal.dataset.color = color;
             modal.dataset.isHeadquarters = isHeadquarters.toString();
-            
-            console.log('Modal dataset set - color:', modal.dataset.color, 'isHeadquarters:', modal.dataset.isHeadquarters);
             
             startTimer();
         }
@@ -1618,47 +1366,25 @@
         function answerCorrect() {
             const modal = document.getElementById('questionModal');
             const color = modal.dataset.color;
-            const isHeadquarters = modal.dataset.isHeadquarters === 'true';
             
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
             
-            console.log('=== ANSWER CORRECT ===');
-            console.log('Team index:', gameState.currentTeamIndex);
-            console.log('Team name:', currentTeam.name);
-            console.log('Team position:', currentTeam.position);
-            console.log('Question color:', color);
-            console.log('IsHeadquarters:', isHeadquarters);
-            console.log('Team already has this wedge?', currentTeam.wedges[color]);
-            console.log('All team wedges:', JSON.stringify(currentTeam.wedges));
-            
-            // Award wedge if on HQ and team doesn't have it yet
-            if (isHeadquarters && !currentTeam.wedges[color]) {
-                console.log('✓ Awarding wedge for color:', color);
+            if (!currentTeam.wedges[color]) {
                 currentTeam.wedges[color] = true;
-                console.log('✓ Team wedges after award:', JSON.stringify(currentTeam.wedges));
                 
-                // Force update of team progress display
                 setTimeout(() => {
                     updateTeamProgress();
-                    console.log('✓ Team progress updated');
                 }, 100);
                 
-                // Check for win
                 if (checkWin(currentTeam)) {
-                    showWinner(currentTeam);
-                    return;
+                    setTimeout(() => {
+                        alert(`🎉 ${currentTeam.name} has collected all 4 wedges! Head to any Headquarters and enter the spoke path to reach the center and WIN!`);
+                    }, 500);
                 }
-            } else {
-                console.log('✗ Wedge NOT awarded because:');
-                if (!isHeadquarters) console.log('  - Not on headquarters');
-                if (currentTeam.wedges[color]) console.log('  - Already has this wedge');
             }
             
-            // Close modal
             modal.classList.remove('active');
             clearInterval(gameState.timerInterval);
-            
-            // Player gets another turn, don't call nextTeam()
         }
 
         function answerIncorrect() {
@@ -1677,20 +1403,15 @@
             const container = document.getElementById('teamProgress');
             container.innerHTML = '';
             
-            console.log('=== UPDATE TEAM PROGRESS ===');
-            
             gameState.teams.forEach((team, teamIndex) => {
-                console.log(`Team ${teamIndex + 1} (${team.name}) wedges:`, JSON.stringify(team.wedges));
-                
                 const div = document.createElement('div');
                 div.className = 'team-wheel';
                 
-                const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
+                const colors = ['red', 'green', 'blue', 'yellow'];
                 const wedgesHTML = colors.map(color => {
                     const collected = team.wedges[color];
-                    const bgColor = collected ? `var(--color-${color})` : '#2a2a2a';
-                    console.log(`  ${color}: ${collected ? 'COLLECTED' : 'not collected'} - using color ${bgColor}`);
-                    return `<div class="wheel-wedge ${collected ? 'collected' : ''}" style="background: ${bgColor} !important;"></div>`;
+                    const classes = collected ? `wheel-wedge collected collected-${color}` : 'wheel-wedge';
+                    return `<div class="${classes}"></div>`;
                 }).join('');
                 
                 div.innerHTML = `
@@ -1699,8 +1420,6 @@
                 `;
                 container.appendChild(div);
             });
-            
-            console.log('Team progress display updated');
         }
 
         function checkWin(team) {
@@ -1711,13 +1430,12 @@
             document.getElementById('winnerName').textContent = team.name;
             document.getElementById('winningMessage').classList.add('active');
             
-            // Create confetti
             for (let i = 0; i < 50; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22'][Math.floor(Math.random() * 6)];
+                    confetti.style.background = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f'][Math.floor(Math.random() * 4)];
                     confetti.style.animationDelay = Math.random() * 3 + 's';
                     document.getElementById('winningMessage').appendChild(confetti);
                 }, i * 50);
