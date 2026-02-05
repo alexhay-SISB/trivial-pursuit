@@ -18,6 +18,8 @@
             --color-green: #2ecc71;
             --color-blue: #3498db;
             --color-yellow: #f1c40f;
+            --color-purple: #9b59b6;
+            --color-orange: #e67e22;
             --bg-primary: #1a1a2e;
             --bg-secondary: #16213e;
             --text-light: #eee;
@@ -136,6 +138,8 @@
         .category-item.green { border-color: var(--color-green); }
         .category-item.blue { border-color: var(--color-blue); }
         .category-item.yellow { border-color: var(--color-yellow); }
+        .category-item.purple { border-color: var(--color-purple); }
+        .category-item.orange { border-color: var(--color-orange); }
 
         input, textarea, select {
             width: 100%;
@@ -188,24 +192,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, var(--accent), #ff6b9d);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             box-shadow: 0 10px 40px rgba(0, 217, 255, 0.5);
             z-index: 10;
         }
 
         .board-space {
             position: absolute;
-            width: 60px;
+            width: 45px;
             height: 60px;
-            border-radius: 50%;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -213,7 +217,8 @@
             justify-content: center;
             font-weight: 600;
             font-size: 0.9rem;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .board-space:hover {
@@ -233,21 +238,31 @@
         }
 
         .board-space.headquarters {
-            width: 80px;
+            width: 65px;
             height: 80px;
             font-size: 1.1rem;
             border-width: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
         .piece {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             position: absolute;
             border: 3px solid white;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 5;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .piece:hover {
+            transform: scale(1.2);
+            z-index: 101;
         }
 
         .dice-container {
@@ -421,11 +436,14 @@
             border-radius: 5px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
+            background: #2a2a2a !important; /* Black by default */
+            position: relative;
         }
 
         .wheel-wedge.collected {
             border-color: white;
             box-shadow: 0 0 15px currentColor;
+            /* Color will be set inline when collected */
         }
 
         .share-section {
@@ -609,6 +627,14 @@
                         <label>🟡 Yellow Category</label>
                         <input type="text" id="catYellow" placeholder="e.g., True or False" value="True or False">
                     </div>
+                    <div class="category-item purple">
+                        <label>🟣 Purple Category</label>
+                        <input type="text" id="catPurple" placeholder="e.g., Multiple Choice" value="Multiple Choice">
+                    </div>
+                    <div class="category-item orange">
+                        <label>🟠 Orange Category</label>
+                        <input type="text" id="catOrange" placeholder="e.g., Apply" value="Apply">
+                    </div>
                 </div>
             </div>
 
@@ -623,6 +649,8 @@
                             <option value="green">🟢 Green</option>
                             <option value="blue">🔵 Blue</option>
                             <option value="yellow">🟡 Yellow</option>
+                            <option value="purple">🟣 Purple</option>
+                            <option value="orange">🟠 Orange</option>
                         </select>
                     </div>
                 </div>
@@ -758,14 +786,18 @@
                 red: 'Define',
                 green: 'Give 2 Examples',
                 blue: 'Explain',
-                yellow: 'True or False'
+                yellow: 'True or False',
+                purple: 'Multiple Choice',
+                orange: 'Apply'
             },
             questions: {},
             teams: [],
             currentTeamIndex: 0,
             boardSpaces: [],
             currentRoll: 0,
-            timerInterval: null
+            possibleMoves: [],
+            timerInterval: null,
+            colorOrder: [] // Will store randomized color order for the board
         };
 
         // Initialize - don't create teams automatically
@@ -779,15 +811,18 @@
                     gameState.teams.push({
                         name: `Team ${i + 1}`,
                         color: colors[i],
-                        position: 0,
+                        position: i * 7, // Start at different HQ positions (0, 7, 14, 21)
                         wedges: {
                             red: false,
                             green: false,
                             blue: false,
-                            yellow: false
+                            yellow: false,
+                            purple: false,
+                            orange: false
                         }
                     });
                 }
+                console.log('Teams initialized:', gameState.teams.map(t => `${t.name} at position ${t.position}`));
             }
             updateTeamSetup();
         }
@@ -811,15 +846,18 @@
         function addTeam() {
             if (gameState.teams.length >= 6) return;
             const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            const startPositions = [0, 7, 14, 21]; // 4 starting HQ positions
             gameState.teams.push({
                 name: `Team ${gameState.teams.length + 1}`,
                 color: colors[gameState.teams.length],
-                position: 0,
+                position: startPositions[gameState.teams.length % 4],
                 wedges: {
                     red: false,
                     green: false,
                     blue: false,
-                    yellow: false
+                    yellow: false,
+                    purple: false,
+                    orange: false
                 }
             });
             updateTeamSetup();
@@ -865,9 +903,9 @@
         }
 
         function parseQuestions(data) {
-            gameState.questions = { red: [], green: [], blue: [], yellow: [] };
+            gameState.questions = { red: [], green: [], blue: [], yellow: [], purple: [], orange: [] };
             
-            // New format: columns are "Red Question", "Red Answer", "Green Question", "Green Answer", etc.
+            // New format: columns are "Red Question", "Red Answer", etc.
             data.forEach(row => {
                 // Red questions
                 if (row['Red Question'] && row['Red Answer']) {
@@ -904,6 +942,24 @@
                         gameState.questions.yellow.push({ question, answer });
                     }
                 }
+                
+                // Purple questions
+                if (row['Purple Question'] && row['Purple Answer']) {
+                    const question = String(row['Purple Question']).trim();
+                    const answer = String(row['Purple Answer']).trim();
+                    if (question && answer) {
+                        gameState.questions.purple.push({ question, answer });
+                    }
+                }
+                
+                // Orange questions
+                if (row['Orange Question'] && row['Orange Answer']) {
+                    const question = String(row['Orange Question']).trim();
+                    const answer = String(row['Orange Answer']).trim();
+                    if (question && answer) {
+                        gameState.questions.orange.push({ question, answer });
+                    }
+                }
             });
             
             updateQuestionsPreview();
@@ -936,7 +992,7 @@
             tbody.innerHTML = '';
             
             let totalCount = 0;
-            const colors = ['red', 'green', 'blue', 'yellow'];
+            const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
             
             colors.forEach(color => {
                 if (gameState.questions[color]) {
@@ -962,39 +1018,51 @@
         }
 
         function downloadTemplate() {
-            // Create template with column-based layout: Red Q, Red A, Green Q, Green A, etc.
+            // Create template with column-based layout: Red Q, Red A, Green Q, Green A, etc. (6 colors)
             const headers = [
                 'Red Question', 'Red Answer', 
                 'Green Question', 'Green Answer', 
                 'Blue Question', 'Blue Answer', 
-                'Yellow Question', 'Yellow Answer'
+                'Yellow Question', 'Yellow Answer',
+                'Purple Question', 'Purple Answer',
+                'Orange Question', 'Orange Answer'
             ];
             
             const instructionRow = [
                 'INSTRUCTIONS: Each color has a Question and Answer column. Add at least 20 question/answer pairs per color by filling rows below. Simply copy/paste from your question bank!',
-                '', '', '', '', '', '', ''
+                '', '', '', '', '', '', '', '', '', '', ''
             ];
             
             const examples = {
                 red: [
-                    ["Define photosynthesis", "The process by which plants convert light energy into chemical energy (glucose) using carbon dioxide and water"],
+                    ["Define photosynthesis", "The process by which plants convert light energy into chemical energy using carbon dioxide and water"],
                     ["Define democracy", "A system of government where citizens exercise power by voting and electing representatives"],
                     ["Define velocity", "The rate of change of an object's position with respect to time, including direction"]
                 ],
                 green: [
-                    ["Give 2 examples of renewable energy sources", "1) Solar power - energy from the sun, 2) Wind power - energy from wind turbines"],
-                    ["Give 2 examples of mammals that lay eggs", "1) Platypus, 2) Echidna (spiny anteater)"],
-                    ["Give 2 examples of chemical reactions in daily life", "1) Rusting of iron, 2) Combustion of fuel in cars"]
+                    ["Give 2 examples of renewable energy", "1) Solar power 2) Wind power"],
+                    ["Give 2 examples of mammals that lay eggs", "1) Platypus 2) Echidna"],
+                    ["Give 2 examples of chemical reactions", "1) Rusting 2) Combustion"]
                 ],
                 blue: [
-                    ["Explain why the sky appears blue", "Light from the sun scatters in Earth's atmosphere. Blue light has a shorter wavelength and scatters more than other colors"],
-                    ["Explain how vaccines work", "Vaccines introduce a weakened or inactive form of a pathogen to stimulate the immune system to produce antibodies"],
-                    ["Explain the water cycle", "Water evaporates from surfaces, forms clouds through condensation, falls as precipitation, and returns to bodies of water"]
+                    ["Explain why the sky is blue", "Light scatters in the atmosphere; blue light scatters more"],
+                    ["Explain how vaccines work", "They introduce weakened pathogens to build immunity"],
+                    ["Explain the water cycle", "Water evaporates, condenses, precipitates, and returns"]
                 ],
                 yellow: [
-                    ["True or False: Water boils at 100°C at sea level", "True"],
-                    ["True or False: The Great Wall of China is visible from space with the naked eye", "False - it's a common myth"],
-                    ["True or False: Bats are blind", "False - bats can see, though many use echolocation"]
+                    ["True or False: Water boils at 100°C", "True"],
+                    ["True or False: The Great Wall is visible from space", "False"],
+                    ["True or False: Bats are blind", "False"]
+                ],
+                purple: [
+                    ["What is the capital of France? A)London B)Paris", "B) Paris"],
+                    ["Which planet is red? A)Venus B)Mars", "B) Mars"],
+                    ["How many sides in hexagon? A)5 B)6", "B) 6"]
+                ],
+                orange: [
+                    ["Apply Newton's First Law to braking", "Objects in motion stay in motion unless force applied"],
+                    ["Apply supply/demand to shortages", "Decreased supply with constant demand raises prices"],
+                    ["Apply Pythagorean theorem to 3m x 4m", "a²+b²=c², so 3²+4²=25, c=5m"]
                 ]
             };
             
@@ -1033,21 +1101,37 @@
                     row.push('', '');
                 }
                 
+                // Purple Q & A
+                if (i < 3) {
+                    row.push(examples.purple[i][0], examples.purple[i][1]);
+                } else {
+                    row.push('', '');
+                }
+                
+                // Orange Q & A
+                if (i < 3) {
+                    row.push(examples.orange[i][0], examples.orange[i][1]);
+                } else {
+                    row.push('', '');
+                }
+                
                 data.push(row);
             }
             
             const ws = XLSX.utils.aoa_to_sheet(data);
             
-            // Set column widths
+            // Set column widths for 6 colors (12 columns)
             ws['!cols'] = [
-                { wch: 50 }, { wch: 50 }, // Red
-                { wch: 50 }, { wch: 50 }, // Green
-                { wch: 50 }, { wch: 50 }, // Blue
-                { wch: 50 }, { wch: 50 }  // Yellow
+                { wch: 45 }, { wch: 45 }, // Red
+                { wch: 45 }, { wch: 45 }, // Green
+                { wch: 45 }, { wch: 45 }, // Blue
+                { wch: 45 }, { wch: 45 }, // Yellow
+                { wch: 45 }, { wch: 45 }, // Purple
+                { wch: 45 }, { wch: 45 }  // Orange
             ];
             
-            // Merge instruction cell across all columns
-            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }];
+            // Merge instruction cell across all 12 columns
+            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }];
             
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Questions');
@@ -1060,6 +1144,8 @@
             gameState.categories.green = document.getElementById('catGreen').value;
             gameState.categories.blue = document.getElementById('catBlue').value;
             gameState.categories.yellow = document.getElementById('catYellow').value;
+            gameState.categories.purple = document.getElementById('catPurple').value;
+            gameState.categories.orange = document.getElementById('catOrange').value;
             
             const gameData = {
                 categories: gameState.categories,
@@ -1096,6 +1182,8 @@
                 document.getElementById('catGreen').value = decoded.categories.green;
                 document.getElementById('catBlue').value = decoded.categories.blue;
                 document.getElementById('catYellow').value = decoded.categories.yellow;
+                document.getElementById('catPurple').value = decoded.categories.purple || 'Multiple Choice';
+                document.getElementById('catOrange').value = decoded.categories.orange || 'Apply';
                 
                 updateQuestionsPreview();
                 
@@ -1116,8 +1204,8 @@
             let totalQuestions = 0;
             Object.values(gameState.questions).forEach(arr => totalQuestions += arr.length);
             
-            if (totalQuestions < 4) {
-                alert('Please add at least 1 question per category (4 total minimum)');
+            if (totalQuestions < 6) {
+                alert('Please add at least 1 question per category (6 total minimum)');
                 return;
             }
             
@@ -1127,6 +1215,8 @@
                 gameState.categories.green = document.getElementById('catGreen').value;
                 gameState.categories.blue = document.getElementById('catBlue').value;
                 gameState.categories.yellow = document.getElementById('catYellow').value;
+                gameState.categories.purple = document.getElementById('catPurple').value;
+                gameState.categories.orange = document.getElementById('catOrange').value;
             }
             
             createBoard();
@@ -1136,74 +1226,166 @@
 
         function createBoard() {
             const board = document.getElementById('gameBoard');
-            board.innerHTML = '<div class="board-center">START</div>';
+            board.innerHTML = '<div class="board-center">FINISH</div>';
             
-            const colors = ['red', 'green', 'blue', 'yellow'];
+            // Randomize color order for the board - 6 colors
+            const allColors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
+            gameState.colorOrder = allColors.sort(() => Math.random() - 0.5);
+            
             const positions = [];
-            
-            // Create spaces in a wheel pattern
-            const radius = 280;
             const centerX = 350;
             const centerY = 350;
+            const outerRadius = 280;
+            const centerRadius = 80;
             
-            // Headquarters (4 spokes)
-            for (let i = 0; i < 4; i++) {
-                const angle = (i * 90 - 90) * Math.PI / 180;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
+            // Create circular path around the outside (28 spaces total: 4 HQ + 24 regular)
+            // 4 headquarters evenly spaced, with 6 spaces between each
+            const totalOuterSpaces = 28;
+            const spacesPerSection = 7; // 1 HQ + 6 regular spaces
+            const hqPositions = [0, 7, 14, 21]; // Positions of the 4 HQ spaces
+            
+            // Randomly select 5 positions for "roll again" (not on HQ spaces, at least 3 apart)
+            const nonHQPositions = [];
+            for (let i = 0; i < totalOuterSpaces; i++) {
+                if (!hqPositions.includes(i)) {
+                    nonHQPositions.push(i);
+                }
+            }
+            
+            // Select 5 positions that are at least 3 spaces apart
+            const rollAgainPositions = [];
+            const shuffled = nonHQPositions.sort(() => Math.random() - 0.5);
+            for (let pos of shuffled) {
+                // Check if this position is at least 3 spaces from all existing roll-again positions
+                const tooClose = rollAgainPositions.some(existing => {
+                    const distance = Math.min(
+                        Math.abs(pos - existing),
+                        totalOuterSpaces - Math.abs(pos - existing) // Account for circular wrapping
+                    );
+                    return distance < 3;
+                });
                 
-                const space = createSpace(colors[i], x, y, true);
-                positions.push({ color: colors[i], x, y, isHQ: true });
+                if (!tooClose) {
+                    rollAgainPositions.push(pos);
+                    if (rollAgainPositions.length === 5) break;
+                }
+            }
+            
+            for (let i = 0; i < totalOuterSpaces; i++) {
+                const angle = (i * (360 / totalOuterSpaces) - 90) * Math.PI / 180;
+                const x = centerX + outerRadius * Math.cos(angle);
+                const y = centerY + outerRadius * Math.sin(angle);
+                
+                const isHQ = hqPositions.includes(i);
+                
+                // Determine color
+                let spaceColor;
+                if (rollAgainPositions.includes(i)) {
+                    spaceColor = 'roll-again';
+                } else {
+                    // Rotate through all 6 colors in randomized order
+                    spaceColor = gameState.colorOrder[i % 6];
+                }
+                
+                // HQ spaces use first 4 colors from randomized order
+                if (isHQ) {
+                    const hqIndex = hqPositions.indexOf(i);
+                    spaceColor = gameState.colorOrder[hqIndex];
+                }
+                
+                const space = createSpace(spaceColor, x, y, isHQ, angle);
+                positions.push({ 
+                    color: spaceColor, 
+                    x, 
+                    y, 
+                    isHQ: isHQ, 
+                    isOuter: true, 
+                    spokeEntry: isHQ ? hqPositions.indexOf(i) : null 
+                });
                 board.appendChild(space);
             }
             
-            // Regular spaces around the wheel (32 spaces, 8 per spoke)
+            // Create 4 spoke paths from headquarters to center (5 spaces each)
+            const numSpokeSpaces = 5;
             for (let spoke = 0; spoke < 4; spoke++) {
-                for (let step = 1; step <= 7; step++) {
-                    const angle = (spoke * 90 - 90) * Math.PI / 180;
-                    const r = 70 + (step * 30);
-                    const x = centerX + r * Math.cos(angle);
-                    const y = centerY + r * Math.sin(angle);
+                const spokeAngle = (spoke * 90 - 90) * Math.PI / 180;
+                
+                for (let step = 1; step <= numSpokeSpaces; step++) {
+                    // Calculate radius with proper spacing accounting for card dimensions
+                    // Card height is 60px, so we need to move 60px inward each step
+                    const cardHeight = 60;
+                    const radius = outerRadius - (step * cardHeight);
                     
-                    // Determine space type
-                    let spaceColor;
-                    if (step === 4 && Math.random() < 0.3) {
-                        spaceColor = 'roll-again';
-                    } else {
-                        spaceColor = colors[spoke];
-                    }
+                    const x = centerX + radius * Math.cos(spokeAngle);
+                    const y = centerY + radius * Math.sin(spokeAngle);
                     
-                    const space = createSpace(spaceColor, x, y, false);
-                    positions.push({ color: spaceColor, x, y, isHQ: false });
+                    // Random color for each spoke space
+                    const spokeColor = gameState.colorOrder[Math.floor(Math.random() * 6)];
+                    
+                    const space = createSpace(spokeColor, x, y, false, spokeAngle);
+                    positions.push({ 
+                        color: spokeColor, 
+                        x, 
+                        y, 
+                        isHQ: false, 
+                        isOuter: false, 
+                        spoke: spoke 
+                    });
                     board.appendChild(space);
                 }
             }
             
             gameState.boardSpaces = positions;
             
-            // Create pieces for all teams
+            console.log('Board created with', positions.length, 'total spaces');
+            console.log('Outer spaces (first 28):', positions.slice(0, 28).map((p, i) => `${i}: ${p.color} ${p.isHQ ? '⭐HQ' : ''}`));
+            console.log('HQ positions should be at indices:', [0, 7, 14, 21]);
+            
+            // Create visible pieces for all teams at their different HQ starting positions
             gameState.teams.forEach((team, index) => {
                 const piece = document.createElement('div');
                 piece.className = 'piece';
                 piece.style.background = team.color;
-                piece.style.left = `${centerX - 15 + index * 10}px`;
-                piece.style.top = `${centerY - 15}px`;
+                
+                // Place each team at their designated starting HQ position
+                const startSpace = gameState.boardSpaces[team.position];
+                piece.style.left = `${startSpace.x - 17.5}px`;
+                piece.style.top = `${startSpace.y - 17.5}px`;
+                
+                piece.style.border = '3px solid white';
+                piece.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.3)';
+                piece.innerHTML = `<div style="font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${index + 1}</div>`;
                 piece.id = `piece-${index}`;
                 board.appendChild(piece);
             });
         }
 
-        function createSpace(color, x, y, isHQ) {
+        function createSpace(color, x, y, isHQ, angle) {
             const space = document.createElement('div');
             space.className = `board-space ${isHQ ? 'headquarters' : ''}`;
-            space.style.left = `${x - (isHQ ? 40 : 30)}px`;
-            space.style.top = `${y - (isHQ ? 40 : 30)}px`;
+            
+            // Position based on whether it's HQ or regular
+            const width = isHQ ? 65 : 45;
+            const height = isHQ ? 80 : 60;
+            space.style.left = `${x - width/2}px`;
+            space.style.top = `${y - height/2}px`;
+            
+            // Rotate the space to align with the circle
+            const rotation = (angle * 180 / Math.PI) + 90;
+            space.style.transform = `rotate(${rotation}deg)`;
+            
+            // Store metadata for debugging
+            space.dataset.color = color;
+            space.dataset.isHq = isHQ.toString();
             
             if (color === 'roll-again') {
-                space.style.background = 'linear-gradient(135deg, #ff6b9d, #00d9ff)';
-                space.innerHTML = '🎲';
+                space.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
+                space.innerHTML = '<span style="transform: rotate(' + (-rotation) + 'deg); display: block;">🎲</span>';
             } else {
                 space.style.background = `var(--color-${color})`;
+                if (isHQ) {
+                    space.innerHTML = '<span style="transform: rotate(' + (-rotation) + 'deg); display: block; font-size: 1.5rem;">⭐</span>';
+                }
             }
             
             space.dataset.color = color;
@@ -1229,50 +1411,156 @@
         }
 
         function highlightPossibleMoves(spaces) {
+            console.log('highlightPossibleMoves called - spaces to move:', spaces);
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
-            const newPosition = (currentTeam.position + spaces) % gameState.boardSpaces.length;
+            console.log('Current team:', currentTeam.name, 'at position:', currentTeam.position);
             
+            // Remove all highlights
             document.querySelectorAll('.board-space').forEach(space => {
                 space.classList.remove('highlighted');
             });
             
-            const targetSpace = document.querySelectorAll('.board-space')[newPosition];
-            if (targetSpace) {
-                targetSpace.classList.add('highlighted');
+            // Calculate possible position(s)
+            const currentPos = currentTeam.position;
+            const currentSpace = gameState.boardSpaces[currentPos];
+            
+            console.log('Current space data:', JSON.stringify(currentSpace));
+            
+            let targetPositions = [];
+            
+            if (currentSpace.isOuter) {
+                // On outer ring - move clockwise
+                const outerSpaces = gameState.boardSpaces.filter(s => s.isOuter);
+                const currentOuterIndex = outerSpaces.findIndex(s => s === currentSpace);
+                const newOuterIndex = (currentOuterIndex + spaces) % outerSpaces.length;
+                const targetSpace = outerSpaces[newOuterIndex];
+                const actualIndex = gameState.boardSpaces.indexOf(targetSpace);
+                
+                console.log('Moving on outer ring from', currentOuterIndex, 'to', newOuterIndex, 'actual index:', actualIndex);
+                targetPositions.push(actualIndex);
+                
+                // If landing on HQ and team has that wedge, can choose to go down spoke
+                const landingSpace = gameState.boardSpaces[actualIndex];
+                if (landingSpace.isHQ && landingSpace.spokeEntry !== null && currentTeam.wedges[landingSpace.color]) {
+                    // Also highlight first space of spoke
+                    const spokeSpaces = gameState.boardSpaces.filter(s => !s.isOuter && s.spoke === landingSpace.spokeEntry);
+                    if (spokeSpaces.length > 0) {
+                        targetPositions.push(gameState.boardSpaces.indexOf(spokeSpaces[0]));
+                    }
+                }
+            } else {
+                // On a spoke - continue down spoke toward center
+                const spokeNum = currentSpace.spoke;
+                const spokeSpaces = gameState.boardSpaces.filter(s => !s.isOuter && s.spoke === spokeNum);
+                const currentSpokeIndex = spokeSpaces.indexOf(currentSpace);
+                
+                if (currentSpokeIndex + spaces < spokeSpaces.length) {
+                    // Move down the spoke
+                    const nextSpace = spokeSpaces[currentSpokeIndex + spaces];
+                    targetPositions.push(gameState.boardSpaces.indexOf(nextSpace));
+                } else {
+                    // Would reach center - win condition!
+                    // Highlight center
+                    document.querySelector('.board-center').classList.add('highlighted');
+                }
             }
+            
+            console.log('Target positions:', targetPositions);
+            
+            // Highlight all possible target positions
+            targetPositions.forEach(pos => {
+                const allSpaces = document.querySelectorAll('.board-space');
+                allSpaces[pos].classList.add('highlighted');
+            });
+            
+            gameState.possibleMoves = targetPositions;
         }
 
         function moveToSpace(spaceElement) {
-            if (gameState.currentRoll === 0 || !spaceElement.classList.contains('highlighted')) return;
+            if (gameState.currentRoll === 0) {
+                console.log('Cannot move - no dice roll');
+                return;
+            }
+            if (!spaceElement.classList.contains('highlighted')) {
+                console.log('Cannot move - space not highlighted');
+                return;
+            }
             
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
-            const newPosition = (currentTeam.position + gameState.currentRoll) % gameState.boardSpaces.length;
-            currentTeam.position = newPosition;
+            
+            // Find which position this space is in boardSpaces array
+            const allSpaces = document.querySelectorAll('.board-space');
+            const spaceIndex = Array.from(allSpaces).indexOf(spaceElement);
+            
+            if (spaceIndex < 0) {
+                console.error('Space not found in DOM');
+                return;
+            }
+            
+            // Get the actual board space data
+            const spaceData = gameState.boardSpaces[spaceIndex];
+            
+            if (!spaceData) {
+                console.error('No space data at index', spaceIndex);
+                return;
+            }
+            
+            // Also check the element's own data attributes as backup
+            const elementIsHQ = spaceElement.dataset.isHq === 'true';
+            const elementHasHQClass = spaceElement.classList.contains('headquarters');
+            
+            console.log('=== MOVE TO SPACE ===');
+            console.log('spaceIndex:', spaceIndex);
+            console.log('spaceData:', JSON.stringify(spaceData));
+            console.log('element data-isHq:', elementIsHQ);
+            console.log('element has HQ class:', elementHasHQClass);
+            
+            // Update team position to this index in the boardSpaces array
+            currentTeam.position = spaceIndex;
             
             // Animate piece movement
             const piece = document.getElementById(`piece-${gameState.currentTeamIndex}`);
-            const spaceData = gameState.boardSpaces[newPosition];
-            piece.style.left = `${spaceData.x - 15}px`;
-            piece.style.top = `${spaceData.y - 15}px`;
+            piece.style.left = `${spaceData.x - 17.5}px`;
+            piece.style.top = `${spaceData.y - 17.5}px`;
             
+            // Reset roll and highlights
             gameState.currentRoll = 0;
+            gameState.possibleMoves = [];
             document.querySelectorAll('.board-space').forEach(s => s.classList.remove('highlighted'));
             
             // Show question or roll again
-            const color = spaceElement.dataset.color;
+            const color = spaceData.color;
+            // Use element's data attribute as source of truth since it's set when space is created
+            const isHQ = elementIsHQ;
+            
+            console.log('Will show question for - color:', color, 'isHQ:', isHQ);
+            
             if (color === 'roll-again') {
                 setTimeout(() => {
                     alert('Roll Again!');
-                    rollDice();
                 }, 600);
             } else {
-                setTimeout(() => showQuestion(color, spaceData.isHQ), 600);
+                // Always show question - removed the setTimeout wrapper that might cause issues
+                if (!color) {
+                    console.error('No color found for space!');
+                    return;
+                }
+                setTimeout(() => {
+                    console.log('Calling showQuestion now...');
+                    showQuestion(color, isHQ);
+                }, 600);
             }
         }
 
         function showQuestion(color, isHeadquarters) {
+            console.log('showQuestion called - Color:', color, 'IsHeadquarters:', isHeadquarters);
+            console.log('gameState.questions:', gameState.questions);
+            console.log(`Questions for ${color}:`, gameState.questions[color]);
+            
             if (!gameState.questions[color] || gameState.questions[color].length === 0) {
-                alert('No questions available for this category!');
+                alert(`No questions available for the ${color} category!\n\nPlease make sure you've uploaded an Excel file with questions or added them manually before starting the game.`);
+                console.error('No questions found for color:', color);
+                console.error('All questions:', JSON.stringify(gameState.questions));
                 nextTeam();
                 return;
             }
@@ -1294,7 +1582,9 @@
             
             // Store current question context
             modal.dataset.color = color;
-            modal.dataset.isHeadquarters = isHeadquarters;
+            modal.dataset.isHeadquarters = isHeadquarters.toString();
+            
+            console.log('Modal dataset set - color:', modal.dataset.color, 'isHeadquarters:', modal.dataset.isHeadquarters);
             
             startTimer();
         }
@@ -1332,23 +1622,48 @@
             
             const currentTeam = gameState.teams[gameState.currentTeamIndex];
             
+            console.log('=== ANSWER CORRECT ===');
+            console.log('Team index:', gameState.currentTeamIndex);
+            console.log('Team name:', currentTeam.name);
+            console.log('Team position:', currentTeam.position);
+            console.log('Question color:', color);
+            console.log('IsHeadquarters:', isHeadquarters);
+            console.log('Team already has this wedge?', currentTeam.wedges[color]);
+            console.log('All team wedges:', JSON.stringify(currentTeam.wedges));
+            
+            // Award wedge if on HQ and team doesn't have it yet
             if (isHeadquarters && !currentTeam.wedges[color]) {
+                console.log('✓ Awarding wedge for color:', color);
                 currentTeam.wedges[color] = true;
-                updateTeamProgress();
+                console.log('✓ Team wedges after award:', JSON.stringify(currentTeam.wedges));
+                
+                // Force update of team progress display
+                setTimeout(() => {
+                    updateTeamProgress();
+                    console.log('✓ Team progress updated');
+                }, 100);
                 
                 // Check for win
                 if (checkWin(currentTeam)) {
                     showWinner(currentTeam);
                     return;
                 }
+            } else {
+                console.log('✗ Wedge NOT awarded because:');
+                if (!isHeadquarters) console.log('  - Not on headquarters');
+                if (currentTeam.wedges[color]) console.log('  - Already has this wedge');
             }
             
+            // Close modal
             modal.classList.remove('active');
+            clearInterval(gameState.timerInterval);
+            
             // Player gets another turn, don't call nextTeam()
         }
 
         function answerIncorrect() {
             document.getElementById('questionModal').classList.remove('active');
+            clearInterval(gameState.timerInterval);
             nextTeam();
         }
 
@@ -1362,14 +1677,21 @@
             const container = document.getElementById('teamProgress');
             container.innerHTML = '';
             
-            gameState.teams.forEach(team => {
+            console.log('=== UPDATE TEAM PROGRESS ===');
+            
+            gameState.teams.forEach((team, teamIndex) => {
+                console.log(`Team ${teamIndex + 1} (${team.name}) wedges:`, JSON.stringify(team.wedges));
+                
                 const div = document.createElement('div');
                 div.className = 'team-wheel';
                 
-                const colors = ['red', 'green', 'blue', 'yellow'];
-                const wedgesHTML = colors.map(color => 
-                    `<div class="wheel-wedge ${team.wedges[color] ? 'collected' : ''}" style="background: var(--color-${color});"></div>`
-                ).join('');
+                const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
+                const wedgesHTML = colors.map(color => {
+                    const collected = team.wedges[color];
+                    const bgColor = collected ? `var(--color-${color})` : '#2a2a2a';
+                    console.log(`  ${color}: ${collected ? 'COLLECTED' : 'not collected'} - using color ${bgColor}`);
+                    return `<div class="wheel-wedge ${collected ? 'collected' : ''}" style="background: ${bgColor} !important;"></div>`;
+                }).join('');
                 
                 div.innerHTML = `
                     <div style="font-weight: 600; margin-bottom: 5px;">${team.name}</div>
@@ -1377,6 +1699,8 @@
                 `;
                 container.appendChild(div);
             });
+            
+            console.log('Team progress display updated');
         }
 
         function checkWin(team) {
