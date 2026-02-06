@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educational Trivial Pursuit - 4 Colors</title>
+    <title>Educational Trivial Pursuit</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -639,7 +639,6 @@
         <!-- Home Page -->
         <div id="homePage" class="page active">
             <h1>🎯 Educational Trivial Pursuit</h1>
-            <h2 style="text-align: center; color: var(--accent); margin-bottom: 40px;">4-Color Edition</h2>
             <div class="menu-buttons">
                 <button class="btn menu-button" onclick="showPage('setupPage')">🎮 Teacher: Create Game</button>
                 <button class="btn menu-button" onclick="showPage('loadGamePage')">📱 Student: Join Game</button>
@@ -747,7 +746,7 @@
             <h1>Team Setup</h1>
             <div class="setup-section">
                 <h2>Teams</h2>
-                <p style="margin-bottom: 15px;">How many teams are playing? (2-6 teams)</p>
+                <p style="margin-bottom: 15px;">How many teams are playing? (2-4 teams)</p>
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
                     <button class="btn btn-small" onclick="updateTeamCount(-1)">-</button>
                     <span id="teamCountDisplay" style="font-size: 1.5rem; font-weight: 700; min-width: 50px; text-align: center;">2</span>
@@ -763,11 +762,25 @@
 
         <!-- Game Page -->
         <div id="gamePage" class="page">
+            <!-- Start Game Overlay -->
+            <div id="startGameOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <h1 style="font-size: 4rem; margin-bottom: 30px;">🎮 Ready to Play?</h1>
+                <p style="font-size: 1.5rem; margin-bottom: 40px; opacity: 0.8;">Click below to start the game with music!</p>
+                <button class="btn" style="font-size: 1.5rem; padding: 20px 50px;" onclick="startGamePlay()">🎵 Start Game</button>
+            </div>
+
             <div class="game-info">
                 <div class="current-team">
                     Current Turn: <span id="currentTeamName" style="color: var(--accent);">Team 1</span>
                 </div>
-                <button class="btn btn-small btn-secondary" onclick="endGame()">End Game</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-small" onclick="toggleMusic()" id="musicBtn">🔊 Music</button>
+                    <button class="btn btn-small btn-secondary" onclick="endGame()">End Game</button>
+                </div>
+            </div>
+
+            <!-- Game Message Display -->
+            <div id="gameMessage" style="display: none; text-align: center; padding: 15px; margin: 20px auto; max-width: 500px; background: rgba(0, 217, 255, 0.2); border: 2px solid var(--accent); border-radius: 15px; font-size: 1.3rem; font-weight: 700; animation: fadeIn 0.5s ease;">
             </div>
 
             <div class="team-progress" id="teamProgress"></div>
@@ -778,6 +791,11 @@
             </div>
 
             <div class="game-board" id="gameBoard"></div>
+
+            <!-- Background Music -->
+            <audio id="backgroundMusic" loop>
+                <source src="gamemusic.mp3" type="audio/mpeg">
+            </audio>
         </div>
     </div>
 
@@ -831,7 +849,7 @@
         updateQuestionsPreview();
 
         function initializeTeams() {
-            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'];
             if (gameState.teams.length === 0) {
                 for (let i = 0; i < 2; i++) {
                     gameState.teams.push({
@@ -852,9 +870,9 @@
 
         function updateTeamCount(change) {
             const currentCount = gameState.teams.length || 2;
-            const newCount = Math.max(2, Math.min(6, currentCount + change));
+            const newCount = Math.max(2, Math.min(4, currentCount + change));
             
-            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'];
             
             if (newCount > gameState.teams.length) {
                 for (let i = gameState.teams.length; i < newCount; i++) {
@@ -1122,6 +1140,51 @@
             createBoard();
             updateTeamProgress();
             showPage('gamePage');
+            // Don't start music yet - wait for user to click Start Game button
+        }
+
+        function startGamePlay() {
+            // This is called when user clicks "Start Game" button - allows music to play
+            const music = document.getElementById('backgroundMusic');
+            console.log('Attempting to play music...');
+            console.log('Audio element:', music);
+            console.log('Audio src:', music.src);
+            
+            music.volume = 0.3;
+            music.play()
+                .then(() => {
+                    console.log('Music started successfully!');
+                })
+                .catch(error => {
+                    console.error('Error playing music:', error);
+                    alert('Music failed to load. Make sure gamemusic.mp3 is in the same folder as the HTML file.');
+                });
+            
+            // Hide the overlay
+            document.getElementById('startGameOverlay').style.display = 'none';
+        }
+
+        function showGameMessage(message) {
+            const msgElement = document.getElementById('gameMessage');
+            msgElement.textContent = message;
+            msgElement.style.display = 'block';
+            
+            setTimeout(() => {
+                msgElement.style.display = 'none';
+            }, 3000);
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('backgroundMusic');
+            const btn = document.getElementById('musicBtn');
+            
+            if (music.paused) {
+                music.play();
+                btn.textContent = '🔊 Music';
+            } else {
+                music.pause();
+                btn.textContent = '🔇 Music';
+            }
         }
 
         function createBoard() {
@@ -1455,7 +1518,7 @@
             
             if (color === 'roll-again') {
                 setTimeout(() => {
-                    alert('Roll Again!');
+                    showGameMessage('🎲 Roll Again! 🎲');
                 }, 600);
             } else {
                 if (!color) return;
@@ -1467,7 +1530,7 @@
 
         function showQuestion(color, isHeadquarters) {
             if (!gameState.questions[color] || gameState.questions[color].length === 0) {
-                alert(`No questions available for the ${color} category!`);
+                showGameMessage(`❌ No questions available for the ${gameState.categories[color]} category!`);
                 nextTeam();
                 return;
             }
@@ -1534,7 +1597,7 @@
                 
                 if (checkWin(currentTeam)) {
                     setTimeout(() => {
-                        alert(`🎉 ${currentTeam.name} has collected all 4 wedges! Now when you pass or land on ANY Headquarters, you'll automatically enter the spoke path to the center. Keep rolling to WIN!`);
+                        showGameMessage(`🎉 ${currentTeam.name} has collected all 4 wedges! Now when you pass or land on ANY Headquarters, you'll automatically enter the spoke path to the center. Keep rolling to WIN!`);
                     }, 500);
                 }
             }
