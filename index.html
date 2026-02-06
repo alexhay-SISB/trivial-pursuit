@@ -154,16 +154,26 @@
 
         .category-setup {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
             margin: 20px 0;
         }
 
         .category-item {
             background: rgba(255, 255, 255, 0.08);
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 5px solid;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .category-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .category-item input {
+            margin: 0;
         }
 
         .category-item.red { border-color: var(--color-red); }
@@ -711,13 +721,29 @@
             </div>
 
             <div class="setup-section">
-                <h2>3. Generate Game Code</h2>
-                <p style="margin-bottom: 15px;">Create a code for students to join:</p>
-                <button class="btn" onclick="generateGameCode()">🔑 Generate Game Code</button>
-                <div id="gameCodeDisplay" class="hidden" style="margin-top: 20px; padding: 20px; background: rgba(0, 217, 255, 0.1); border-radius: 10px;">
-                    <p style="font-size: 1.2rem; font-weight: 600;">Share this code with students:</p>
-                    <p id="gameCodeText" style="font-family: 'Space Mono', monospace; font-size: 1.5rem; margin: 15px 0; word-break: break-all;"></p>
-                    <button class="btn btn-small" onclick="copyGameCode()">📋 Copy Code</button>
+                <h2>3. Share Game with Students</h2>
+                <p style="margin-bottom: 20px;">Choose how to share your game:</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Option 1: Game Code -->
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px;">
+                        <h3 style="color: var(--accent); margin-bottom: 15px;">📋 Option 1: Game Code</h3>
+                        <p style="font-size: 0.9rem; margin-bottom: 15px; opacity: 0.8;">Generate a code students can copy/paste</p>
+                        <button class="btn" onclick="generateGameCode()">🔑 Generate Code</button>
+                        <div id="gameCodeDisplay" class="hidden" style="margin-top: 15px; padding: 15px; background: rgba(0, 217, 255, 0.1); border-radius: 10px;">
+                            <p style="font-size: 1rem; font-weight: 600;">Share this code:</p>
+                            <p id="gameCodeText" style="font-family: 'Space Mono', monospace; font-size: 1.2rem; margin: 10px 0; word-break: break-all; max-height: 150px; overflow-y: auto;"></p>
+                            <button class="btn btn-small" onclick="copyGameCode()">📋 Copy Code</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Option 2: Download File -->
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px;">
+                        <h3 style="color: var(--accent); margin-bottom: 15px;">💾 Option 2: Download File</h3>
+                        <p style="font-size: 0.9rem; margin-bottom: 15px; opacity: 0.8;">Download a file students can upload</p>
+                        <button class="btn" onclick="downloadGameFile()">⬇️ Download Game File</button>
+                        <p style="margin-top: 15px; font-size: 0.85rem; opacity: 0.7;">Students upload this file to join</p>
+                    </div>
                 </div>
             </div>
 
@@ -729,13 +755,30 @@
         <!-- Load Game Page (Student) -->
         <div id="loadGamePage" class="page">
             <h1>Join Game</h1>
-            <div class="setup-section">
-                <h2>Enter Game Code</h2>
-                <p style="margin-bottom: 15px;">Enter the code from your teacher:</p>
-                <input type="text" id="loadGameCode" placeholder="Paste game code here" style="font-family: 'Space Mono', monospace;">
-                <button class="btn" onclick="loadGameFromCode()" style="margin-top: 15px;">Load Game</button>
-                <p id="loadStatus" style="margin-top: 15px; font-weight: 600;"></p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                <!-- Option 1: Enter Code -->
+                <div class="setup-section">
+                    <h2>📋 Option 1: Enter Code</h2>
+                    <p style="margin-bottom: 15px;">Enter the code from your teacher:</p>
+                    <input type="text" id="loadGameCode" placeholder="Paste game code here" style="font-family: 'Space Mono', monospace;">
+                    <button class="btn" onclick="loadGameFromCode()" style="margin-top: 15px;">Load Game</button>
+                    <p id="loadStatus" style="margin-top: 15px; font-weight: 600;"></p>
+                </div>
+                
+                <!-- Option 2: Upload File -->
+                <div class="setup-section">
+                    <h2>💾 Option 2: Upload File</h2>
+                    <p style="margin-bottom: 15px;">Upload the game file from your teacher:</p>
+                    <div class="file-upload" onclick="document.getElementById('gameFileInput').click()" style="padding: 30px; margin-top: 0;">
+                        <input type="file" id="gameFileInput" accept=".json" style="display: none;" onchange="loadGameFromFile(event)">
+                        <p style="font-size: 1.2rem;">📂 Click to Upload Game File</p>
+                        <p style="opacity: 0.7; margin-top: 10px; font-size: 0.9rem;">Accepts .json files</p>
+                    </div>
+                    <p id="fileLoadStatus" style="margin-top: 15px; font-weight: 600;"></p>
+                </div>
             </div>
+            
             <div class="button-group">
                 <button class="btn btn-secondary" onclick="showPage('homePage')">← Back</button>
             </div>
@@ -777,6 +820,29 @@
             </div>
 
             <div class="team-progress" id="teamProgress"></div>
+
+            <!-- Category Legend -->
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 600px; text-align: center;">
+                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.3rem;">📚 Categories</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; background: var(--color-red); border-radius: 8px; flex-shrink: 0;"></div>
+                        <span id="legendRed" style="font-weight: 600; font-size: 1.1rem;">Define</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; background: var(--color-green); border-radius: 8px; flex-shrink: 0;"></div>
+                        <span id="legendGreen" style="font-weight: 600; font-size: 1.1rem;">Give Examples</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; background: var(--color-blue); border-radius: 8px; flex-shrink: 0;"></div>
+                        <span id="legendBlue" style="font-weight: 600; font-size: 1.1rem;">Explain</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 30px; height: 30px; background: var(--color-yellow); border-radius: 8px; flex-shrink: 0;"></div>
+                        <span id="legendYellow" style="font-weight: 600; font-size: 1.1rem;">True or False</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="dice-container">
                 <div class="dice" id="dice" onclick="rollDice()">🎲</div>
@@ -835,7 +901,8 @@
             possibleMoves: [],
             timerInterval: null,
             colorOrder: [],
-            canWin: false
+            canWin: false,
+            loadedFromCode: false  // Track if game was loaded from code
         };
 
         // Initialize
@@ -1083,6 +1150,36 @@
             document.getElementById('gameCodeDisplay').classList.remove('hidden');
         }
 
+        function downloadGameFile() {
+            gameState.categories.red = document.getElementById('catRed').value;
+            gameState.categories.green = document.getElementById('catGreen').value;
+            gameState.categories.blue = document.getElementById('catBlue').value;
+            gameState.categories.yellow = document.getElementById('catYellow').value;
+            
+            const gameData = {
+                categories: gameState.categories,
+                questions: gameState.questions
+            };
+            
+            // Create a blob with the game data
+            const dataStr = JSON.stringify(gameData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'trivial-pursuit-game.json';
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Game file downloaded! Share this file with your students.');
+        }
+
         function copyGameCode() {
             const code = document.getElementById('gameCodeText').textContent;
             navigator.clipboard.writeText(code).then(() => {
@@ -1102,6 +1199,10 @@
                 const decoded = JSON.parse(decodeURIComponent(atob(code)));
                 gameState.categories = decoded.categories;
                 gameState.questions = decoded.questions;
+                gameState.loadedFromCode = true;  // Mark as loaded from code
+                
+                console.log('Loaded categories:', gameState.categories);
+                console.log('Loaded questions:', gameState.questions);
                 
                 document.getElementById('loadStatus').innerHTML = '✅ Game loaded successfully!';
                 document.getElementById('loadStatus').style.color = '#2ecc71';
@@ -1109,9 +1210,39 @@
                 initializeTeams();
                 setTimeout(() => showPage('teamSetupPage'), 1500);
             } catch (error) {
+                console.error('Error loading game code:', error);
                 document.getElementById('loadStatus').innerHTML = '❌ Invalid game code';
                 document.getElementById('loadStatus').style.color = '#e74c3c';
             }
+        }
+
+        function loadGameFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const gameData = JSON.parse(e.target.result);
+                    gameState.categories = gameData.categories;
+                    gameState.questions = gameData.questions;
+                    gameState.loadedFromCode = true;  // Mark as loaded from file
+                    
+                    console.log('Loaded categories from file:', gameState.categories);
+                    console.log('Loaded questions from file:', gameState.questions);
+                    
+                    document.getElementById('fileLoadStatus').innerHTML = '✅ Game file loaded successfully!';
+                    document.getElementById('fileLoadStatus').style.color = '#2ecc71';
+                    
+                    initializeTeams();
+                    setTimeout(() => showPage('teamSetupPage'), 1500);
+                } catch (error) {
+                    console.error('Error loading game file:', error);
+                    document.getElementById('fileLoadStatus').innerHTML = '❌ Invalid game file';
+                    document.getElementById('fileLoadStatus').style.color = '#e74c3c';
+                }
+            };
+            reader.readAsText(file);
         }
 
         function startGame() {
@@ -1123,16 +1254,46 @@
                 return;
             }
             
-            if (document.getElementById('catRed')) {
+            console.log('=== START GAME ===');
+            console.log('Categories before update:', JSON.stringify(gameState.categories));
+            console.log('Loaded from code?', gameState.loadedFromCode);
+            console.log('Input field exists?', !!document.getElementById('catRed'));
+            
+            // Only update from input fields if NOT loaded from game code
+            if (!gameState.loadedFromCode && document.getElementById('catRed')) {
+                console.log('Updating from input fields (teacher created game)');
                 gameState.categories.red = document.getElementById('catRed').value;
                 gameState.categories.green = document.getElementById('catGreen').value;
                 gameState.categories.blue = document.getElementById('catBlue').value;
                 gameState.categories.yellow = document.getElementById('catYellow').value;
+            } else {
+                console.log('Using loaded categories (student joined with code)');
             }
+            
+            // Ensure categories exist (fallback to defaults if not loaded)
+            if (!gameState.categories || !gameState.categories.red) {
+                console.log('No categories found, using defaults');
+                gameState.categories = {
+                    red: 'Define',
+                    green: 'Give Examples',
+                    blue: 'Explain',
+                    yellow: 'True or False'
+                };
+            }
+            
+            console.log('Final categories:', JSON.stringify(gameState.categories));
             
             createBoard();
             updateTeamProgress();
             showPage('gamePage');
+            
+            // Update category legend with actual names (only if elements exist)
+            if (document.getElementById('legendRed')) {
+                document.getElementById('legendRed').textContent = gameState.categories.red;
+                document.getElementById('legendGreen').textContent = gameState.categories.green;
+                document.getElementById('legendBlue').textContent = gameState.categories.blue;
+                document.getElementById('legendYellow').textContent = gameState.categories.yellow;
+            }
             
             // Try to start music (will work if user just clicked a button)
             const music = document.getElementById('backgroundMusic');
