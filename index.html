@@ -762,13 +762,6 @@
 
         <!-- Game Page -->
         <div id="gamePage" class="page">
-            <!-- Start Game Overlay -->
-            <div id="startGameOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <h1 style="font-size: 4rem; margin-bottom: 30px;">🎮 Ready to Play?</h1>
-                <p style="font-size: 1.5rem; margin-bottom: 40px; opacity: 0.8;">Click below to start the game with music!</p>
-                <button class="btn" style="font-size: 1.5rem; padding: 20px 50px;" onclick="startGamePlay()">🎵 Start Game</button>
-            </div>
-
             <div class="game-info">
                 <div class="current-team">
                     Current Turn: <span id="currentTeamName" style="color: var(--accent);">Team 1</span>
@@ -1140,28 +1133,14 @@
             createBoard();
             updateTeamProgress();
             showPage('gamePage');
-            // Don't start music yet - wait for user to click Start Game button
-        }
-
-        function startGamePlay() {
-            // This is called when user clicks "Start Game" button - allows music to play
+            
+            // Try to start music (will work if user just clicked a button)
             const music = document.getElementById('backgroundMusic');
-            console.log('Attempting to play music...');
-            console.log('Audio element:', music);
-            console.log('Audio src:', music.src);
-            
             music.volume = 0.3;
-            music.play()
-                .then(() => {
-                    console.log('Music started successfully!');
-                })
-                .catch(error => {
-                    console.error('Error playing music:', error);
-                    alert('Music failed to load. Make sure gamemusic.mp3 is in the same folder as the HTML file.');
-                });
-            
-            // Hide the overlay
-            document.getElementById('startGameOverlay').style.display = 'none';
+            music.play().catch(e => {
+                // Silent fail - user can click music button to start it
+                console.log('Music autoplay blocked - user can enable with music button');
+            });
         }
 
         function showGameMessage(message) {
