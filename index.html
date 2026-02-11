@@ -844,24 +844,32 @@
             <div class="team-progress" id="teamProgress"></div>
 
             <!-- Category Legend -->
-            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 600px; text-align: center;">
-                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.3rem;">📚 Categories</h3>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: var(--color-red); border-radius: 8px; flex-shrink: 0;"></div>
-                        <span id="legendRed" style="font-weight: 600; font-size: 1.1rem;">Define</span>
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; margin: 20px auto; max-width: 700px; text-align: center;">
+                <h3 style="color: var(--accent); margin-bottom: 10px; font-size: 1.1rem;">📚 Categories</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-red); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendRed" style="font-weight: 600; font-size: 0.85rem;">Define</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: var(--color-green); border-radius: 8px; flex-shrink: 0;"></div>
-                        <span id="legendGreen" style="font-weight: 600; font-size: 1.1rem;">Give Examples</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-green); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendGreen" style="font-weight: 600; font-size: 0.85rem;">Give Examples</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: var(--color-blue); border-radius: 8px; flex-shrink: 0;"></div>
-                        <span id="legendBlue" style="font-weight: 600; font-size: 1.1rem;">Explain</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-blue); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendBlue" style="font-weight: 600; font-size: 0.85rem;">Explain</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: var(--color-yellow); border-radius: 8px; flex-shrink: 0;"></div>
-                        <span id="legendYellow" style="font-weight: 600; font-size: 1.1rem;">True or False</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-yellow); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendYellow" style="font-weight: 600; font-size: 0.85rem;">True or False</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-purple); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendPurple" style="font-weight: 600; font-size: 0.85rem;">Apply</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 18px; height: 18px; background: var(--color-orange); border-radius: 4px; flex-shrink: 0;"></div>
+                        <span id="legendOrange" style="font-weight: 600; font-size: 0.85rem;">Analyze</span>
                     </div>
                 </div>
             </div>
@@ -1341,6 +1349,8 @@
                 document.getElementById('legendGreen').textContent = gameState.categories.green;
                 document.getElementById('legendBlue').textContent = gameState.categories.blue;
                 document.getElementById('legendYellow').textContent = gameState.categories.yellow;
+                document.getElementById('legendPurple').textContent = gameState.categories.purple;
+                document.getElementById('legendOrange').textContent = gameState.categories.orange;
             }
             
             // Try to start music (will work if user just clicked a button)
@@ -1840,7 +1850,7 @@
                 const div = document.createElement('div');
                 div.className = 'team-wheel';
                 
-                const colors = ['red', 'green', 'blue', 'yellow'];
+                const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
                 const wedgesHTML = colors.map(color => {
                     const collected = team.wedges[color];
                     const classes = collected ? `wheel-wedge collected collected-${color}` : 'wheel-wedge';
@@ -1868,7 +1878,7 @@
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f'][Math.floor(Math.random() * 4)];
+                    confetti.style.background = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22'][Math.floor(Math.random() * 6)];
                     confetti.style.animationDelay = Math.random() * 3 + 's';
                     document.getElementById('winningMessage').appendChild(confetti);
                 }, i * 50);
