@@ -18,6 +18,8 @@
             --color-green: #2ecc71;
             --color-blue: #3498db;
             --color-yellow: #f1c40f;
+            --color-purple: #9b59b6;
+            --color-orange: #e67e22;
             --bg-primary: #1a1a2e;
             --bg-secondary: #16213e;
             --text-light: #eee;
@@ -180,6 +182,8 @@
         .category-item.green { border-color: var(--color-green); }
         .category-item.blue { border-color: var(--color-blue); }
         .category-item.yellow { border-color: var(--color-yellow); }
+        .category-item.purple { border-color: var(--color-purple); }
+        .category-item.orange { border-color: var(--color-orange); }
 
         input, textarea, select {
             width: 100%;
@@ -546,6 +550,14 @@
             background: var(--color-yellow) !important;
         }
 
+        .wheel-wedge.collected-purple {
+            background: var(--color-purple) !important;
+        }
+
+        .wheel-wedge.collected-orange {
+            background: var(--color-orange) !important;
+        }
+
         .hidden {
             display: none;
         }
@@ -661,7 +673,7 @@
             
             <div class="setup-section">
                 <h2>1. Customize Categories</h2>
-                <p style="margin-bottom: 20px;">Name your 4 question categories:</p>
+                <p style="margin-bottom: 20px;">Name your 6 question categories:</p>
                 <div class="category-setup">
                     <div class="category-item red">
                         <label>🔴 Red Category</label>
@@ -678,6 +690,14 @@
                     <div class="category-item yellow">
                         <label>🟡 Yellow Category</label>
                         <input type="text" id="catYellow" value="True or False" placeholder="e.g., True or False">
+                    </div>
+                    <div class="category-item purple">
+                        <label>🟣 Purple Category</label>
+                        <input type="text" id="catPurple" value="Apply" placeholder="e.g., Apply">
+                    </div>
+                    <div class="category-item orange">
+                        <label>🟠 Orange Category</label>
+                        <input type="text" id="catOrange" value="Analyze" placeholder="e.g., Analyze">
                     </div>
                 </div>
             </div>
@@ -714,6 +734,8 @@
                     <option value="green">Green</option>
                     <option value="blue">Blue</option>
                     <option value="yellow">Yellow</option>
+                    <option value="purple">Purple</option>
+                    <option value="orange">Orange</option>
                 </select>
                 <textarea id="manualQuestion" placeholder="Question" rows="2"></textarea>
                 <textarea id="manualAnswer" placeholder="Answer" rows="2"></textarea>
@@ -789,7 +811,7 @@
             <h1>Team Setup</h1>
             <div class="setup-section">
                 <h2>Teams</h2>
-                <p style="margin-bottom: 15px;">How many teams are playing? (2-4 teams)</p>
+                <p style="margin-bottom: 15px;">How many teams are playing? (2-6 teams)</p>
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
                     <button class="btn btn-small" onclick="updateTeamCount(-1)">-</button>
                     <span id="teamCountDisplay" style="font-size: 1.5rem; font-weight: 700; min-width: 50px; text-align: center;">2</span>
@@ -891,7 +913,9 @@
                 red: 'Define',
                 green: 'Give Examples',
                 blue: 'Explain',
-                yellow: 'True or False'
+                yellow: 'True or False',
+                purple: 'Apply',
+                orange: 'Analyze'
             },
             questions: {},
             teams: [],
@@ -909,18 +933,20 @@
         updateQuestionsPreview();
 
         function initializeTeams() {
-            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'];
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
             if (gameState.teams.length === 0) {
                 for (let i = 0; i < 2; i++) {
                     gameState.teams.push({
                         name: `Team ${i + 1}`,
                         color: colors[i],
-                        position: i * 7,
+                        position: i * 6,
                         wedges: {
                             red: false,
                             green: false,
                             blue: false,
-                            yellow: false
+                            yellow: false,
+                            purple: false,
+                            orange: false
                         }
                     });
                 }
@@ -930,17 +956,17 @@
 
         function updateTeamCount(change) {
             const currentCount = gameState.teams.length || 2;
-            const newCount = Math.max(2, Math.min(4, currentCount + change));
+            const newCount = Math.max(2, Math.min(6, currentCount + change));
             
-            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f'];
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
             
             if (newCount > gameState.teams.length) {
                 for (let i = gameState.teams.length; i < newCount; i++) {
                     gameState.teams.push({
                         name: `Team ${i + 1}`,
                         color: colors[i],
-                        position: (i % 4) * 7,
-                        wedges: { red: false, green: false, blue: false, yellow: false }
+                        position: (i % 6) * 6,
+                        wedges: { red: false, green: false, blue: false, yellow: false, purple: false, orange: false }
                     });
                 }
             } else if (newCount < gameState.teams.length) {
@@ -998,10 +1024,10 @@
         }
 
         function parseQuestions(data) {
-            gameState.questions = { red: [], green: [], blue: [], yellow: [] };
+            gameState.questions = { red: [], green: [], blue: [], yellow: [], purple: [], orange: [] };
             
             data.forEach(row => {
-                ['red', 'green', 'blue', 'yellow'].forEach(color => {
+                ['red', 'green', 'blue', 'yellow', 'purple', 'orange'].forEach(color => {
                     const qCol = `${color.charAt(0).toUpperCase() + color.slice(1)} Question`;
                     const aCol = `${color.charAt(0).toUpperCase() + color.slice(1)} Answer`;
                     
@@ -1045,7 +1071,7 @@
             tbody.innerHTML = '';
             
             let totalCount = 0;
-            const colors = ['red', 'green', 'blue', 'yellow'];
+            const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
             
             colors.forEach(color => {
                 if (gameState.questions[color]) {
@@ -1075,12 +1101,14 @@
                 'Red Question', 'Red Answer',
                 'Green Question', 'Green Answer',
                 'Blue Question', 'Blue Answer',
-                'Yellow Question', 'Yellow Answer'
+                'Yellow Question', 'Yellow Answer',
+                'Purple Question', 'Purple Answer',
+                'Orange Question', 'Orange Answer'
             ];
             
             const instructionRow = [
                 'INSTRUCTIONS: Each color has a Question and Answer column. Add at least 20 question/answer pairs per color by filling rows below.',
-                '', '', '', '', '', '', ''
+                '', '', '', '', '', '', '', '', '', '', ''
             ];
             
             const examples = {
@@ -1103,6 +1131,16 @@
                     ["True or False: Water boils at 100°C", "True"],
                     ["True or False: The Great Wall is visible from space", "False"],
                     ["True or False: Bats are blind", "False"]
+                ],
+                purple: [
+                    ["Apply the Pythagorean theorem to find c if a=3, b=4", "c = 5"],
+                    ["Apply Newton's second law if mass=10kg, acceleration=5m/s²", "Force = 50N"],
+                    ["Apply the scientific method to test a hypothesis", "Observe, hypothesize, test, analyze, conclude"]
+                ],
+                orange: [
+                    ["Analyze the causes of World War I", "Nationalism, imperialism, alliances, militarism"],
+                    ["Analyze the structure of DNA", "Double helix with complementary base pairs"],
+                    ["Analyze the benefits of exercise", "Improved health, strength, mental wellbeing"]
                 ]
             };
             
@@ -1110,7 +1148,7 @@
             
             for (let i = 0; i < 20; i++) {
                 const row = [];
-                ['red', 'green', 'blue', 'yellow'].forEach(color => {
+                ['red', 'green', 'blue', 'yellow', 'purple', 'orange'].forEach(color => {
                     if (i < 3) {
                         row.push(examples[color][i][0], examples[color][i][1]);
                     } else {
@@ -1125,13 +1163,15 @@
                 { wch: 45 }, { wch: 45 },
                 { wch: 45 }, { wch: 45 },
                 { wch: 45 }, { wch: 45 },
+                { wch: 45 }, { wch: 45 },
+                { wch: 45 }, { wch: 45 },
                 { wch: 45 }, { wch: 45 }
             ];
-            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }];
+            ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 11 } }];
             
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Questions');
-            XLSX.writeFile(wb, 'trivial_pursuit_template_4colors.xlsx');
+            XLSX.writeFile(wb, 'trivial_pursuit_template_6colors.xlsx');
         }
 
         function generateGameCode() {
@@ -1139,6 +1179,8 @@
             gameState.categories.green = document.getElementById('catGreen').value;
             gameState.categories.blue = document.getElementById('catBlue').value;
             gameState.categories.yellow = document.getElementById('catYellow').value;
+            gameState.categories.purple = document.getElementById('catPurple').value;
+            gameState.categories.orange = document.getElementById('catOrange').value;
             
             const gameData = {
                 categories: gameState.categories,
@@ -1155,6 +1197,8 @@
             gameState.categories.green = document.getElementById('catGreen').value;
             gameState.categories.blue = document.getElementById('catBlue').value;
             gameState.categories.yellow = document.getElementById('catYellow').value;
+            gameState.categories.purple = document.getElementById('catPurple').value;
+            gameState.categories.orange = document.getElementById('catOrange').value;
             
             const gameData = {
                 categories: gameState.categories,
@@ -1249,8 +1293,8 @@
             let totalQuestions = 0;
             Object.values(gameState.questions).forEach(arr => totalQuestions += arr.length);
             
-            if (totalQuestions < 4) {
-                alert('Please add at least 1 question per category (4 total minimum)');
+            if (totalQuestions < 6) {
+                alert('Please add at least 1 question per category (6 total minimum)');
                 return;
             }
             
@@ -1266,6 +1310,8 @@
                 gameState.categories.green = document.getElementById('catGreen').value;
                 gameState.categories.blue = document.getElementById('catBlue').value;
                 gameState.categories.yellow = document.getElementById('catYellow').value;
+                gameState.categories.purple = document.getElementById('catPurple').value;
+                gameState.categories.orange = document.getElementById('catOrange').value;
             } else {
                 console.log('Using loaded categories (student joined with code)');
             }
@@ -1277,7 +1323,9 @@
                     red: 'Define',
                     green: 'Give Examples',
                     blue: 'Explain',
-                    yellow: 'True or False'
+                    yellow: 'True or False',
+                    purple: 'Apply',
+                    orange: 'Analyze'
                 };
             }
             
@@ -1343,7 +1391,7 @@
             });
             board.appendChild(center);
             
-            const allColors = ['red', 'green', 'blue', 'yellow'];
+            const allColors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
             gameState.colorOrder = allColors.sort(() => Math.random() - 0.5);
             
             const positions = [];
@@ -1351,8 +1399,8 @@
             const centerY = 350;
             const outerRadius = 280;
             
-            const totalOuterSpaces = 28;
-            const hqPositions = [0, 7, 14, 21];
+            const totalOuterSpaces = 36;
+            const hqPositions = [0, 6, 12, 18, 24, 30];
             
             const nonHQPositions = [];
             for (let i = 0; i < totalOuterSpaces; i++) {
@@ -1361,10 +1409,10 @@
                 }
             }
             
-            const rollAgainPositions = [];
+            const loseWedgePositions = [];
             const shuffled = nonHQPositions.sort(() => Math.random() - 0.5);
             for (let pos of shuffled) {
-                const tooClose = rollAgainPositions.some(existing => {
+                const tooClose = loseWedgePositions.some(existing => {
                     const distance = Math.min(
                         Math.abs(pos - existing),
                         totalOuterSpaces - Math.abs(pos - existing)
@@ -1373,8 +1421,8 @@
                 });
                 
                 if (!tooClose) {
-                    rollAgainPositions.push(pos);
-                    if (rollAgainPositions.length === 5) break;
+                    loseWedgePositions.push(pos);
+                    if (loseWedgePositions.length === 4) break;
                 }
             }
             
@@ -1386,10 +1434,10 @@
                 const isHQ = hqPositions.includes(i);
                 
                 let spaceColor;
-                if (rollAgainPositions.includes(i)) {
-                    spaceColor = 'roll-again';
+                if (loseWedgePositions.includes(i)) {
+                    spaceColor = 'lose-wedge';
                 } else {
-                    spaceColor = gameState.colorOrder[i % 4];
+                    spaceColor = gameState.colorOrder[i % 6];
                 }
                 
                 if (isHQ) {
@@ -1410,8 +1458,8 @@
             }
             
             const numSpokeSpaces = 4;
-            for (let spoke = 0; spoke < 4; spoke++) {
-                const spokeAngle = (spoke * 90 - 90) * Math.PI / 180;
+            for (let spoke = 0; spoke < 6; spoke++) {
+                const spokeAngle = (spoke * 60 - 90) * Math.PI / 180;
                 
                 for (let step = 1; step <= numSpokeSpaces; step++) {
                     const cardHeight = 60;
@@ -1420,7 +1468,7 @@
                     const x = centerX + radius * Math.cos(spokeAngle);
                     const y = centerY + radius * Math.sin(spokeAngle);
                     
-                    const spokeColor = gameState.colorOrder[Math.floor(Math.random() * 4)];
+                    const spokeColor = gameState.colorOrder[Math.floor(Math.random() * 6)];
                     
                     const space = createSpace(spokeColor, x, y, false, spokeAngle);
                     positions.push({
@@ -1481,9 +1529,10 @@
             space.dataset.color = color;
             space.dataset.isHq = isHQ.toString();
             
-            if (color === 'roll-again') {
-                space.style.background = 'linear-gradient(135deg, #95a5a6, #7f8c8d)';
-                space.innerHTML = '<span style="transform: rotate(' + (-rotation) + 'deg); display: block;">🎲</span>';
+            if (color === 'lose-wedge') {
+                space.style.background = 'linear-gradient(135deg, #c0392b, #e74c3c)';
+                space.style.border = '3px solid #ffffff';
+                space.innerHTML = '<span style="transform: rotate(' + (-rotation) + 'deg); display: block; font-size: 1.8rem;">❌</span>';
             } else {
                 space.style.background = `var(--color-${color})`;
                 if (isHQ) {
@@ -1656,9 +1705,9 @@
             document.getElementById('dice').textContent = '🎲';
             document.querySelectorAll('.board-space').forEach(s => s.classList.remove('highlighted'));
             
-            if (color === 'roll-again') {
+            if (color === 'lose-wedge') {
                 setTimeout(() => {
-                    showGameMessage('🎲 Roll Again! 🎲');
+                    loseRandomWedge();
                 }, 600);
             } else {
                 if (!color) return;
@@ -1666,6 +1715,31 @@
                     showQuestion(color, isHQ);
                 }, 600);
             }
+        }
+
+        function loseRandomWedge() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            
+            // Get all collected wedges
+            const collectedWedges = Object.keys(currentTeam.wedges).filter(color => currentTeam.wedges[color] === true);
+            
+            if (collectedWedges.length === 0) {
+                showGameMessage(`😅 ${currentTeam.name} has no wedges to lose!`);
+                nextTeam();
+                return;
+            }
+            
+            // Pick a random wedge to remove
+            const randomWedge = collectedWedges[Math.floor(Math.random() * collectedWedges.length)];
+            currentTeam.wedges[randomWedge] = false;
+            
+            // Update display
+            updateTeamProgress();
+            
+            showGameMessage(`❌ ${currentTeam.name} lost a ${gameState.categories[randomWedge]} wedge!`);
+            
+            // End turn
+            nextTeam();
         }
 
         function showQuestion(color, isHeadquarters) {
@@ -1737,7 +1811,7 @@
                 
                 if (checkWin(currentTeam)) {
                     setTimeout(() => {
-                        showGameMessage(`🎉 ${currentTeam.name} has collected all 4 wedges! Now when you pass or land on ANY Headquarters, you'll automatically enter the spoke path to the center. Keep rolling to WIN!`);
+                        showGameMessage(`🎉 ${currentTeam.name} has collected all 6 wedges! Now when you pass or land on ANY Headquarters, you'll automatically enter the spoke path to the center. Keep rolling to WIN!`);
                     }, 500);
                 }
             }
